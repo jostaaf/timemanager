@@ -15,6 +15,7 @@ import type {
   EventRecord,
   EventUpdate,
 } from "../../db/types.js";
+import { isUtcIsoTimestamp } from "./timestamps.js";
 
 type NewLink = {
   type: "add";
@@ -53,6 +54,7 @@ export type UpdateEventWithContactsResult =
     }
   | { status: "event_not_found" }
   | { status: "event_conflict"; currentVersion: number }
+  | { status: "invalid_timestamp"; field: "start" | "end" }
   | { status: "contact_not_found"; contactKey: number }
   | { status: "duplicate_contact"; contactKey: number }
   | { status: "link_not_found"; linkKey: number }
@@ -73,6 +75,14 @@ export function updateEventWithContacts(
     }
     if (event.version !== input.expectedVersion) {
       return { status: "event_conflict", currentVersion: event.version };
+    }
+    const updatedStart = input.changes.start ?? event.start;
+    const updatedEnd = input.changes.end ?? event.end;
+    if (!isUtcIsoTimestamp(updatedStart)) {
+      return { status: "invalid_timestamp", field: "start" };
+    }
+    if (!isUtcIsoTimestamp(updatedEnd)) {
+      return { status: "invalid_timestamp", field: "end" };
     }
 
     const changedLinkKeys = new Set<number>();

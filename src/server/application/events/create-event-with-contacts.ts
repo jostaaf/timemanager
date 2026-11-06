@@ -6,16 +6,25 @@ import {
   type NewEventContact,
 } from "../../db/event-service.js";
 import type { NewEventRecord } from "../../db/types.js";
+import { isUtcIsoTimestamp } from "./timestamps.js";
 
 export type CreateEventWithContactsResult =
   | ({ status: "created" } & EventWithContacts)
   | { status: "contact_not_found"; contactKey: number }
-  | { status: "duplicate_contact"; contactKey: number };
+  | { status: "duplicate_contact"; contactKey: number }
+  | { status: "invalid_timestamp"; field: "start" | "end" };
 
 export function createEventWithContacts(
   event: NewEventRecord,
   contacts: readonly NewEventContact[],
 ): CreateEventWithContactsResult {
+  if (!isUtcIsoTimestamp(event.start)) {
+    return { status: "invalid_timestamp", field: "start" };
+  }
+  if (!isUtcIsoTimestamp(event.end)) {
+    return { status: "invalid_timestamp", field: "end" };
+  }
+
   return runInImmediateTransaction(() => {
     const assignedContacts = new Set<number>();
     for (const link of contacts) {

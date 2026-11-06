@@ -78,6 +78,19 @@ fails with a SQLite error, all changes in that operation roll back.
 
 Event aggregate use cases are in `events/`:
 
+- `listAllEvents` returns all events ordered by start time, end time, and key.
+- `listEventsInRange(fromInclusive, toExclusive)` selects events by their start
+  time in a half-open range. `listUpcomingEvents(fromInclusive)` selects events
+  starting at or after the given time (defaults to the current time).
+- `searchEventsByName` performs a case-insensitive substring search.
+- `listEventsForContact` returns the events linked to a contact.
+- `listEventsWithContacts` returns each event once with its contacts and their
+  event roles; events without contacts have an empty `contacts` array.
+- `listEventsWithoutContacts` returns events with no contact links.
+- Time-based listing inputs must be canonical UTC ISO-8601 timestamps in
+  `YYYY-MM-DDTHH:mm:ss.sssZ` format. Event creation and updates through the
+  application layer validate the same format so text ordering is chronological.
+
 - `createEventWithContacts` creates an event and its initial contact links
   atomically. It checks contacts exist and rejects duplicate contact keys
   before inserting the event.

@@ -88,6 +88,15 @@ const { updateEventWithContacts } = await import(
 const { deleteEventWithContacts } = await import(
   "../dist/server/application/events/delete-event-with-contacts.js"
 );
+const {
+  listAllEvents,
+  listEventsInRange,
+  listUpcomingEvents,
+  searchEventsByName,
+  listEventsForContact,
+  listEventsWithContacts,
+  listEventsWithoutContacts,
+} = await import("../dist/server/application/events/list-events.js");
 const { createNote: createNoteApplication } = await import(
   "../dist/server/application/notes/create-note.js"
 );
@@ -147,8 +156,8 @@ function event(key) {
     key,
     version: 1,
     name: `Event ${key}`,
-    start: "2026-01-01",
-    end: "2026-01-02",
+    start: "2026-01-01T09:00:00.000Z",
+    end: "2026-01-01T10:00:00.000Z",
     comment: null,
   };
 }
@@ -691,6 +700,104 @@ test("application deletes event and cascades contact links", () => {
   assert.equal(countRows("event", "key", 4302), 0);
   assert.equal(countRows("event_contacts", "event_key", 4302), 0);
   assert.deepEqual(deleteEventWithContacts(4302, 1), { status: "not_found" });
+});
+
+test("application event listings cover all, time, name, and contact queries", () => {
+  const person = insertContact(contact(4801));
+  const secondPerson = insertContact(contact(4802));
+  const first = {
+    ...event(4803),
+    name: "Planning Meeting",
+    start: "2026-04-01T09:00:00.000Z",
+    end: "2026-04-01T10:00:00.000Z",
+  };
+  const second = {
+    ...event(4804),
+    name: "Planning Follow-up",
+    start: "2026-04-01T12:00:00.000Z",
+    end: "2026-04-01T13:00:00.000Z",
+  };
+  const third = {
+    ...event(4805),
+    name: "Personal",
+    start: "2026-04-02T09:00:00.000Z",
+    end: "2026-04-02T10:00:00.000Z",
+  };
+  insertEvent(first);
+  insertEvent(second);
+  insertEvent(third);
+  insertEventContact(eventContact(4806, first.key, person.key));
+  insertEventContact(eventContact(4807, first.key, secondPerson.key));
+  insertEventContact(eventContact(4808, second.key, person.key));
+
+  assert.deepEqual(
+    listAllEvents()
+      .filter((record) => record.key >= 4803)
+      .map((record) => record.key),
+    [4803, 4804, 4805],
+  );
+  assert.deepEqual(
+    listEventsInRange(
+      "2026-04-01T09:00:00.000Z",
+      "2026-04-01T12:00:00.000Z",
+    ).map((record) => record.key),
+    [4803],
+  );
+  assert.deepEqual(
+    listUpcomingEvents("2026-04-01T10:00:00.000Z").map(
+      (record) => record.key,
+    ),
+    [4804, 4805],
+  );
+  assert.deepEqual(
+    searchEventsByName("planning").map((record) => record.key),
+    [4803, 4804],
+  );
+  assert.deepEqual(
+    searchEventsByName("%"),
+    [],
+  );
+  assert.deepEqual(
+    listEventsForContact(person.key).map((record) => record.key),
+    [4803, 4804],
+  );
+
+  const withContacts = listEventsWithContacts().filter(
+    (listing) => listing.event.key >= 4803 && listing.event.key <= 4805,
+  );
+  assert.deepEqual(
+    withContacts.map(({ event: record, contacts }) => [
+      record.key,
+      contacts.map(({ contact: linkedContact, role }) => [
+        linkedContact.key,
+        role,
+      ]),
+    ]),
+    [
+      [4803, [[person.key, null], [secondPerson.key, null]]],
+      [4804, [[person.key, null]]],
+      [4805, []],
+    ],
+  );
+  assert.deepEqual(
+    listEventsWithoutContacts()
+      .filter((record) => record.key >= 4803 && record.key <= 4805)
+      .map((record) => record.key),
+    [4805],
+  );
+
+  assert.throws(
+    () => listEventsInRange("2026-04-01", "2026-04-02T00:00:00.000Z"),
+    /UTC ISO-8601 timestamp/,
+  );
+  assert.throws(
+    () =>
+      listEventsInRange(
+        "2026-04-02T00:00:00.000Z",
+        "2026-04-01T00:00:00.000Z",
+      ),
+    /later than its start/,
+  );
 });
 
 test("application use case adds a contact to an event at most once", () => {
