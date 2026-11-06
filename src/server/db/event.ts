@@ -27,6 +27,12 @@ export function insertEvent(
   return inserted;
 }
 
+export function getEventByKey(key: number): EventRecord | undefined {
+  return db
+    .prepare<[number], EventRecord>('SELECT * FROM event WHERE "key" = ?')
+    .get(key);
+}
+
 export function updateEvent(
   key: number,
   expectedVersion: number,

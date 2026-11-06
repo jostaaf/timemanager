@@ -7,3 +7,7 @@ const databasePath =
 
 export const db = new Database(databasePath);
 db.pragma("foreign_keys = ON");
+
+export function runInImmediateTransaction<T>(operation: () => T): T {
+  return db.transaction(operation).immediate();
+}

@@ -42,6 +42,12 @@ export function insertNote(input: CreateNoteInput): NoteRecord {
   return inserted;
 }
 
+export function getNoteByKey(key: number): NoteRecord | undefined {
+  return db
+    .prepare<[number], NoteRecord>('SELECT * FROM note WHERE "key" = ?')
+    .get(key);
+}
+
 export function updateNote(
   key: number,
   expectedVersion: number,

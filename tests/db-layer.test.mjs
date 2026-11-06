@@ -61,6 +61,42 @@ const { createContactWithSocials } = await import(
 const { createEventWithContacts } = await import(
   "../dist/server/db/event-service.js"
 );
+const { addContactToEvent } = await import(
+  "../dist/server/application/events/add-contact-to-event.js"
+);
+const { createContactWithSocials: createContactApplication } = await import(
+  "../dist/server/application/contacts/create-contact-with-socials.js"
+);
+const { updateContactWithSocials } = await import(
+  "../dist/server/application/contacts/update-contact-with-socials.js"
+);
+const { deleteContactWithSocials } = await import(
+  "../dist/server/application/contacts/delete-contact-with-socials.js"
+);
+const { listContactsMatching } = await import(
+  "../dist/server/application/contacts/list-contacts.js"
+);
+const { listContactsBySocialMedia } = await import(
+  "../dist/server/application/contacts/list-contacts-by-social-media.js"
+);
+const { createEventWithContacts: createEventApplication } = await import(
+  "../dist/server/application/events/create-event-with-contacts.js"
+);
+const { updateEventWithContacts } = await import(
+  "../dist/server/application/events/update-event-with-contacts.js"
+);
+const { deleteEventWithContacts } = await import(
+  "../dist/server/application/events/delete-event-with-contacts.js"
+);
+const { createNote: createNoteApplication } = await import(
+  "../dist/server/application/notes/create-note.js"
+);
+const { updateNoteWithAssignments } = await import(
+  "../dist/server/application/notes/update-note.js"
+);
+const { deleteNoteWithAssignments } = await import(
+  "../dist/server/application/notes/delete-note.js"
+);
 const { insertNote, updateNote, deleteNote } = await import(
   "../dist/server/db/note.js"
 );
@@ -272,6 +308,234 @@ test("contact aggregate inserts atomically and rolls back on child failure", () 
   assert.equal(countRows("contact_socials", "key", 3005), 0);
 });
 
+test("application creates contact with socials atomically", () => {
+  const created = createContactApplication(contact(3501), [
+    {
+      key: 3502,
+      version: 1,
+      media: "example",
+      userid: "first",
+      comment: null,
+    },
+  ]);
+  assert.equal(created.contact.key, 3501);
+  assert.equal(created.socials.length, 1);
+  assert.equal(created.socials[0].contact_key, 3501);
+
+  assert.throws(
+    () =>
+      createContactApplication(contact(3503), [
+        {
+          key: 3502,
+          version: 1,
+          media: "duplicate",
+          userid: null,
+          comment: null,
+        },
+      ]),
+    { code: "SQLITE_CONSTRAINT_PRIMARYKEY" },
+  );
+  assert.equal(countRows("contact", "key", 3503), 0);
+});
+
+test("application updates contact and socials atomically with optimistic locking", () => {
+  const created = createContactApplication(contact(3601), [
+    {
+      key: 3602,
+      version: 1,
+      media: "first",
+      userid: "old",
+      comment: null,
+    },
+    {
+      key: 3603,
+      version: 1,
+      media: "second",
+      userid: null,
+      comment: null,
+    },
+  ]);
+
+  const staleSocial = updateContactWithSocials({
+    contactKey: 3601,
+    expectedVersion: 1,
+    changes: { name: "Must roll back" },
+    socialChanges: [
+      {
+        type: "update",
+        key: 3602,
+        expectedVersion: 9,
+        changes: { userid: "stale" },
+      },
+    ],
+  });
+  assert.deepEqual(staleSocial, {
+    status: "social_conflict",
+    socialKey: 3602,
+    currentVersion: 1,
+  });
+  assert.equal(
+    db.prepare('SELECT "name" FROM contact WHERE "key" = ?').get(3601).name,
+    "Contact 3601",
+  );
+
+  const updated = updateContactWithSocials({
+    contactKey: 3601,
+    expectedVersion: created.contact.version,
+    changes: { name: "Updated application contact" },
+    socialChanges: [
+      {
+        type: "update",
+        key: 3602,
+        expectedVersion: 1,
+        changes: { userid: "new" },
+      },
+      {
+        type: "delete",
+        key: 3603,
+        expectedVersion: 1,
+      },
+      {
+        type: "add",
+        key: 3604,
+        record: {
+          version: 1,
+          media: "third",
+          userid: null,
+          comment: null,
+        },
+      },
+    ],
+  });
+  assert.equal(updated.status, "updated");
+  assert.equal(updated.contact.version, 2);
+  assert.equal(updated.contact.name, "Updated application contact");
+  assert.deepEqual(
+    updated.socials.map((item) => [item.key, item.version, item.contact_key]),
+    [
+      [3602, 2, 3601],
+      [3604, 1, 3601],
+    ],
+  );
+});
+
+test("application deletes contact and cascades its socials", () => {
+  createContactApplication(contact(3701), [
+    {
+      key: 3702,
+      version: 1,
+      media: "example",
+      userid: null,
+      comment: null,
+    },
+  ]);
+
+  assert.deepEqual(deleteContactWithSocials(3701, 1).status, "deleted");
+  assert.equal(countRows("contact", "key", 3701), 0);
+  assert.equal(countRows("contact_socials", "contact_key", 3701), 0);
+  assert.deepEqual(deleteContactWithSocials(3701, 1), { status: "not_found" });
+});
+
+test("application lists all contacts and searches name, address, zip, and city", () => {
+  const existingContacts = listContactsMatching().map((record) => record.key);
+  insertContact({
+    ...contact(3801),
+    name: "Alice Example",
+    street: "12 Oak Street",
+    postcode: 12345,
+    city: "Northville",
+  });
+  insertContact({
+    ...contact(3802),
+    name: "Bob Example",
+    street: "89 Pine Road",
+    postcode: 54321,
+    city: "Southville",
+  });
+  insertContact({
+    ...contact(3803),
+    name: "Alicia Other",
+    street: "12 Oak Avenue",
+    postcode: "12-345",
+    city: "Northville",
+  });
+
+  assert.deepEqual(
+    listContactsMatching()
+      .slice(0, 3)
+      .map((record) => record.key),
+    [3801, 3803, 3802],
+  );
+  assert.equal(listContactsMatching().length, existingContacts.length + 3);
+  assert.deepEqual(
+    listContactsMatching({ name: "alice" }).map((record) => record.key),
+    [3801],
+  );
+  assert.deepEqual(
+    listContactsMatching({ address: "oak" }).map((record) => record.key),
+    [3801, 3803],
+  );
+  assert.deepEqual(
+    listContactsMatching({ zip: "12-3" }).map((record) => record.key),
+    [3803],
+  );
+  assert.deepEqual(
+    listContactsMatching({ city: "NORTH" }).map((record) => record.key),
+    [3801, 3803],
+  );
+  assert.deepEqual(
+    listContactsMatching({ name: "alice", city: "northville" }).map(
+      (record) => record.key,
+    ),
+    [3801],
+  );
+  assert.deepEqual(
+    listContactsMatching({ name: "%", address: "_" }),
+    [],
+  );
+  assert.deepEqual(
+    listContactsMatching({ name: "   " }).map((record) => record.key),
+    listContactsMatching().map((record) => record.key),
+  );
+});
+
+test("application lists contacts by social media platform without duplicates", () => {
+  insertContact(contact(3901));
+  insertContact(contact(3902));
+  insertContact(contact(3903));
+  insertContactSocial({
+    ...social(3904, 3901),
+    media: "Instagram",
+    userid: "alice",
+  });
+  insertContactSocial({
+    ...social(3905, 3901),
+    media: "instagram",
+    userid: "alice-work",
+  });
+  insertContactSocial({
+    ...social(3906, 3902),
+    media: "Instagram",
+    userid: "bob",
+  });
+  insertContactSocial({
+    ...social(3907, 3903),
+    media: "Mastodon",
+    userid: "carol",
+  });
+
+  assert.deepEqual(
+    listContactsBySocialMedia("Instagram").map((record) => record.key),
+    [3901, 3902],
+  );
+  assert.deepEqual(
+    listContactsBySocialMedia("  instagram  ").map((record) => record.key),
+    [3901, 3902],
+  );
+  assert.deepEqual(listContactsBySocialMedia("LinkedIn"), []);
+  assert.throws(() => listContactsBySocialMedia("   "), /must not be empty/);
+});
+
 test("event aggregate inserts atomically and rolls back on invalid contact", () => {
   insertContact(contact(4001));
   const created = createEventWithContacts(event(4002), [
@@ -299,6 +563,186 @@ test("event aggregate inserts atomically and rolls back on invalid contact", () 
   );
   assert.equal(countRows("event", "key", 4004), 0);
   assert.equal(countRows("event_contacts", "key", 4005), 0);
+});
+
+test("application creates event with unique existing contacts", () => {
+  insertContact(contact(4101));
+
+  const created = createEventApplication(event(4102), [
+    { key: 4103, version: 1, contact_key: 4101, role: "host" },
+  ]);
+  assert.equal(created.status, "created");
+  assert.equal(created.event.key, 4102);
+  assert.equal(created.contacts.length, 1);
+  assert.equal(created.contacts[0].event_key, 4102);
+
+  assert.deepEqual(
+    createEventApplication(event(4104), [
+      { key: 4105, version: 1, contact_key: 4101, role: null },
+      { key: 4106, version: 1, contact_key: 4101, role: "duplicate" },
+    ]),
+    { status: "duplicate_contact", contactKey: 4101 },
+  );
+  assert.equal(countRows("event", "key", 4104), 0);
+
+  assert.deepEqual(
+    createEventApplication(event(4107), [
+      { key: 4108, version: 1, contact_key: -1, role: null },
+    ]),
+    { status: "contact_not_found", contactKey: -1 },
+  );
+  assert.equal(countRows("event", "key", 4107), 0);
+});
+
+test("application updates event and contact links atomically", () => {
+  insertContact(contact(4201));
+  insertContact(contact(4202));
+  insertContact(contact(4203));
+  const created = createEventApplication(event(4204), [
+    { key: 4205, version: 1, contact_key: 4201, role: "old role" },
+    { key: 4206, version: 1, contact_key: 4202, role: null },
+  ]);
+  assert.equal(created.status, "created");
+
+  const staleLink = updateEventWithContacts({
+    eventKey: 4204,
+    expectedVersion: 1,
+    changes: { name: "Must roll back" },
+    contactChanges: [
+      {
+        type: "update",
+        key: 4205,
+        expectedVersion: 9,
+        changes: { role: "stale" },
+      },
+    ],
+  });
+  assert.deepEqual(staleLink, {
+    status: "link_conflict",
+    linkKey: 4205,
+    currentVersion: 1,
+  });
+  assert.equal(
+    db.prepare('SELECT "name" FROM event WHERE "key" = ?').get(4204).name,
+    "Event 4204",
+  );
+
+  assert.deepEqual(
+    updateEventWithContacts({
+      eventKey: 4204,
+      expectedVersion: 1,
+      changes: { name: "Duplicate assignment" },
+      contactChanges: [
+        { type: "add", key: 4207, contactKey: 4201 },
+      ],
+    }),
+    { status: "duplicate_contact", contactKey: 4201 },
+  );
+
+  const updated = updateEventWithContacts({
+    eventKey: 4204,
+    expectedVersion: created.event.version,
+    changes: { name: "Updated application event" },
+    contactChanges: [
+      {
+        type: "update",
+        key: 4205,
+        expectedVersion: 1,
+        changes: { role: "updated role" },
+      },
+      { type: "delete", key: 4206, expectedVersion: 1 },
+      {
+        type: "add",
+        key: 4208,
+        contactKey: 4203,
+        role: "guest",
+      },
+    ],
+  });
+  assert.equal(updated.status, "updated");
+  assert.equal(updated.event.version, 2);
+  assert.equal(updated.event.name, "Updated application event");
+  assert.deepEqual(
+    updated.contacts.map((link) => [
+      link.key,
+      link.version,
+      link.contact_key,
+      link.role,
+    ]),
+    [
+      [4205, 2, 4201, "updated role"],
+      [4208, 1, 4203, "guest"],
+    ],
+  );
+});
+
+test("application deletes event and cascades contact links", () => {
+  insertContact(contact(4301));
+  const created = createEventApplication(event(4302), [
+    { key: 4303, version: 1, contact_key: 4301, role: null },
+  ]);
+  assert.equal(created.status, "created");
+
+  assert.deepEqual(deleteEventWithContacts(4302, 0), {
+    status: "conflict",
+    currentVersion: 1,
+  });
+  assert.equal(deleteEventWithContacts(4302, 1).status, "deleted");
+  assert.equal(countRows("event", "key", 4302), 0);
+  assert.equal(countRows("event_contacts", "event_key", 4302), 0);
+  assert.deepEqual(deleteEventWithContacts(4302, 1), { status: "not_found" });
+});
+
+test("application use case adds a contact to an event at most once", () => {
+  insertContact(contact(4501));
+  insertEvent(event(4502));
+
+  const added = addContactToEvent({
+    linkKey: 4503,
+    eventKey: 4502,
+    contactKey: 4501,
+    role: "host",
+  });
+  assert.equal(added.status, "added");
+  assert.deepEqual(added.record, {
+    ...eventContact(4503, 4502, 4501),
+    role: "host",
+  });
+  assert.deepEqual(
+    addContactToEvent({
+      linkKey: 4504,
+      eventKey: 4502,
+      contactKey: 4501,
+      role: "attendee",
+    }),
+    { status: "already_assigned", record: added.record },
+  );
+  assert.equal(countRows("event_contacts", "event_key", 4502), 1);
+  assert.equal(countRows("event_contacts", "key", 4504), 0);
+});
+
+test("application use case reports missing event and contact", () => {
+  insertEvent(event(4601));
+  insertContact(contact(4602));
+
+  assert.deepEqual(
+    addContactToEvent({
+      linkKey: 4603,
+      eventKey: -1,
+      contactKey: 4602,
+    }),
+    { status: "event_not_found" },
+  );
+  assert.deepEqual(
+    addContactToEvent({
+      linkKey: 4604,
+      eventKey: 4601,
+      contactKey: -1,
+    }),
+    { status: "contact_not_found" },
+  );
+  assert.equal(countRows("event_contacts", "key", 4603), 0);
+  assert.equal(countRows("event_contacts", "key", 4604), 0);
 });
 
 test("parent deletion preserves the other parent and cascades only child rows", () => {
@@ -603,6 +1047,142 @@ test("notes use optimistic locking and survive deletion of linked parents", () =
   assert.deepEqual(deleteNote(note.key, orphanUpdate.record.version), {
     status: "not_found",
   });
+});
+
+test("application creates standalone or assigned notes atomically", () => {
+  const person = insertContact(contact(7201));
+  const calendarEvent = insertEvent(event(7202));
+
+  const standalone = createNoteApplication({
+    key: 7203,
+    heading: "Standalone",
+    text: "No assignments are required.",
+  });
+  assert.equal(standalone.status, "created");
+  assert.equal(standalone.note.version, 1);
+  assert.deepEqual(standalone.contactKeys, []);
+  assert.deepEqual(standalone.eventKeys, []);
+
+  const assigned = createNoteApplication({
+    key: 7204,
+    heading: "Assigned",
+    text: "Linked on creation.",
+    contactKeys: [person.key],
+    eventKeys: [calendarEvent.key],
+  });
+  assert.equal(assigned.status, "created");
+  assert.equal(assigned.note.version, 3);
+  assert.deepEqual(assigned.contactKeys, [person.key]);
+  assert.deepEqual(assigned.eventKeys, [calendarEvent.key]);
+
+  assert.deepEqual(
+    createNoteApplication({
+      key: 7205,
+      heading: "Bad contact",
+      text: "Missing parent",
+      contactKeys: [-1],
+    }),
+    { status: "contact_not_found", contactKey: -1 },
+  );
+  assert.equal(countRows("note", "key", 7205), 0);
+  assert.deepEqual(
+    createNoteApplication({
+      key: 7206,
+      heading: "Duplicate contact",
+      text: "Repeated assignment",
+      contactKeys: [person.key, person.key],
+    }),
+    { status: "duplicate_contact", contactKey: person.key },
+  );
+  assert.equal(countRows("note", "key", 7206), 0);
+});
+
+test("application updates note content and replaces assignments with optimistic locking", () => {
+  const firstContact = insertContact(contact(7301));
+  const secondContact = insertContact(contact(7302));
+  const firstEvent = insertEvent(event(7303));
+  const secondEvent = insertEvent(event(7304));
+  const created = createNoteApplication({
+    key: 7305,
+    heading: "Before update",
+    text: "Initial content",
+    contactKeys: [firstContact.key],
+    eventKeys: [firstEvent.key],
+  });
+  assert.equal(created.status, "created");
+
+  assert.deepEqual(
+    updateNoteWithAssignments({
+      noteKey: 7305,
+      expectedVersion: 1,
+      changes: { heading: "Stale" },
+    }),
+    { status: "note_conflict", currentVersion: created.note.version },
+  );
+  assert.deepEqual(
+    updateNoteWithAssignments({
+      noteKey: 7305,
+      expectedVersion: created.note.version,
+      changes: { heading: "Must not apply" },
+      contactKeys: [-1],
+    }),
+    { status: "contact_not_found", contactKey: -1 },
+  );
+  assert.equal(
+    db.prepare('SELECT "heading" FROM note WHERE "key" = ?').get(7305).heading,
+    "Before update",
+  );
+
+  const updated = updateNoteWithAssignments({
+    noteKey: 7305,
+    expectedVersion: created.note.version,
+    changes: { heading: "After update", text: "Changed content" },
+    contactKeys: [secondContact.key],
+    eventKeys: [secondEvent.key],
+  });
+  assert.equal(updated.status, "updated");
+  assert.equal(updated.note.heading, "After update");
+  assert.equal(updated.note.version, created.note.version + 5);
+  assert.deepEqual(updated.contactKeys, [secondContact.key]);
+  assert.deepEqual(updated.eventKeys, [secondEvent.key]);
+
+  const removedAssignments = updateNoteWithAssignments({
+    noteKey: 7305,
+    expectedVersion: updated.note.version,
+    changes: {},
+    contactKeys: [],
+    eventKeys: [],
+  });
+  assert.equal(removedAssignments.status, "updated");
+  assert.deepEqual(removedAssignments.contactKeys, []);
+  assert.deepEqual(removedAssignments.eventKeys, []);
+  assert.equal(removedAssignments.note.version, updated.note.version + 2);
+});
+
+test("application deletes notes without deleting assigned parents", () => {
+  const person = insertContact(contact(7401));
+  const calendarEvent = insertEvent(event(7402));
+  const created = createNoteApplication({
+    key: 7403,
+    heading: "Delete note",
+    text: "Parents remain.",
+    contactKeys: [person.key],
+    eventKeys: [calendarEvent.key],
+  });
+  assert.equal(created.status, "created");
+
+  assert.deepEqual(deleteNoteWithAssignments(7403, 1), {
+    status: "conflict",
+    currentVersion: created.note.version,
+  });
+  assert.equal(
+    deleteNoteWithAssignments(7403, created.note.version).status,
+    "deleted",
+  );
+  assert.equal(countRows("note_contacts", "note_key", 7403), 0);
+  assert.equal(countRows("note_events", "note_key", 7403), 0);
+  assert.equal(countRows("contact", "key", person.key), 1);
+  assert.equal(countRows("event", "key", calendarEvent.key), 1);
 });
 
 test("note-link migration preserves existing note contents and assignments", () => {

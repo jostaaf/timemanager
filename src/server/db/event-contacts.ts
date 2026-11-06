@@ -29,6 +29,44 @@ export function insertEventContact(
   return inserted;
 }
 
+export function getEventContactByPair(
+  eventKey: number,
+  contactKey: number,
+): EventContactsRecord | undefined {
+  return db
+    .prepare<[number, number], EventContactsRecord>(
+      `SELECT *
+       FROM event_contacts
+       WHERE "event_key" = ? AND "contact_key" = ?
+       ORDER BY "key"
+       LIMIT 1`,
+    )
+    .get(eventKey, contactKey);
+}
+
+export function getEventContactByKey(
+  key: number,
+): EventContactsRecord | undefined {
+  return db
+    .prepare<[number], EventContactsRecord>(
+      'SELECT * FROM event_contacts WHERE "key" = ?',
+    )
+    .get(key);
+}
+
+export function getEventContactsForEvent(
+  eventKey: number,
+): EventContactsRecord[] {
+  return db
+    .prepare<[number], EventContactsRecord>(
+      `SELECT *
+       FROM event_contacts
+       WHERE "event_key" = ?
+       ORDER BY "key"`,
+    )
+    .all(eventKey);
+}
+
 export function updateEventContact(
   key: number,
   expectedVersion: number,

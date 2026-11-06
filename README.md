@@ -7,6 +7,10 @@ architecture, CRUD behavior, and schema-change workflow.
 See the [database model](docs/database-model.md) for tables, relationships,
 foreign keys, and indexes.
 
+Application use cases and business rules are kept separately in
+`src/server/application/`, above the persistence-focused `src/server/db/`
+modules.
+
 ## Setup
 
 Install Node.js and npm, then run:

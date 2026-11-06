@@ -17,6 +17,7 @@ relationship, foreign-key, and index reference.
 
 | Path | Responsibility |
 | --- | --- |
+| `src/server/application/` | Application use cases and business rules |
 | `database/timemanager.db` | SQLite database and current table definitions |
 | `src/server/db/client.ts` | Opens and exports the shared synchronous connection |
 | `src/server/db/types.ts` | Generated table, record, insert, and update types |
@@ -34,6 +35,82 @@ relationship, foreign-key, and index reference.
 | `scripts/migrate-002-relationships.py` | Safely applies relationship migration 002 |
 | `scripts/migrate-003-notes.py` | Applies the note-table migration |
 | `database/migrations/` | Ordered SQL changes to an existing database |
+
+## Application layer
+
+Application use cases live in `src/server/application/` and express user-level
+operations using the lower-level database modules. They contain business rules
+that should not be embedded in the database schema.
+
+`events/add-contact-to-event.ts` implements `addContactToEvent`. It checks that
+the event and contact exist, then checks whether the pair is already linked.
+It returns `added`, `already_assigned`, `event_not_found`, or
+`contact_not_found`. A duplicate returns the existing relationship without
+inserting another row. The check and insert run in an immediate transaction,
+so simultaneous application requests cannot both pass the duplicate check.
+The relationship key is supplied by the caller, consistent with the existing
+application-provided key model.
+
+Contact aggregate use cases are in `contacts/`:
+
+- `listContactsMatching` lists all contacts or filters by any combination of
+  name, street address, postcode, and city. Non-empty criteria use
+  case-insensitive substring matching and are combined with AND. `%`, `_`,
+  and `!` in a search value are treated literally.
+- `listContactsBySocialMedia("Instagram")` returns each contact with at least
+  one matching social-media record. Platform matching ignores case and
+  surrounding whitespace; contacts with multiple matching accounts appear
+  only once.
+- `createContactWithSocials` creates a contact and its supplied social records
+  atomically. Social records are assigned to the new contact by the use case.
+- `updateContactWithSocials` updates contact fields and applies a batch of
+  social additions, updates, and deletions atomically. The contact and each
+  existing social use optimistic version checks. It returns explicit
+  `contact_not_found`, `contact_conflict`, `social_not_found`, or
+  `social_conflict` outcomes when applicable. A social record must belong to
+  the contact being updated.
+- `deleteContactWithSocials` deletes the contact using its expected version.
+  The existing database layer cascades deletion of its social records and
+  event-contact links while preserving events and linked notes.
+
+These multi-record operations run in immediate transactions; if an insert
+fails with a SQLite error, all changes in that operation roll back.
+
+Event aggregate use cases are in `events/`:
+
+- `createEventWithContacts` creates an event and its initial contact links
+  atomically. It checks contacts exist and rejects duplicate contact keys
+  before inserting the event.
+- `updateEventWithContacts` updates event fields and applies a batch of link
+  additions, role updates, and deletions atomically. Event and existing links
+  use optimistic version checks. It reports missing contacts or links,
+  version conflicts, duplicate link changes, and duplicate contact assignments
+  with explicit statuses.
+- `deleteEventWithContacts` deletes the event using its expected version. The
+  database cascades deletion of its event-contact links and preserves contacts;
+  linked note versions are maintained by the database-layer delete operation.
+
+Event-contact uniqueness is an application rule, not a database constraint.
+Use these event use cases to prevent duplicate assignments; direct
+database-layer inserts can still create duplicate event/contact pairs.
+Database foreign keys continue to protect referential integrity.
+
+Note use cases are in `notes/`:
+
+- `createNote` creates a standalone note or creates it with optional contact
+  and event assignments. It checks parent existence and duplicate keys before
+  inserting, and creates the note and assignments atomically.
+- `updateNoteWithAssignments` updates note content and optionally replaces the
+  complete contact and/or event assignment lists. Omitted assignment lists
+  remain unchanged; empty lists remove all links. Updates use the expected note
+  version and return explicit missing-note, version-conflict, duplicate-key,
+  or missing-parent outcomes.
+- `deleteNoteWithAssignments` deletes a note using its expected version.
+  Foreign-key cascades remove assignment rows only; contacts and events remain.
+
+Assignment changes increment the note version through the note-link operations.
+The database-generated creation timestamp is not editable through the
+application use case.
 
 ## Database connection
 
