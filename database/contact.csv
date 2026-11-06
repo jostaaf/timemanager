@@ -1,3 +1,3 @@
-key;version;name;street;postcode;city;phone;email;tag;comment
+key;version;name;street;zip;city;phone;email;tag;comment
 1;0;Johan Staaf;Annebergsgatan 8a;21466;Malmö;0702508514;jostaaf@icloud.com;familj;min kommentar
 2;0;Olof Svensson;Annebergsgatan 8b;21466;Malmö;0701123123;olofS@gmail.com;;

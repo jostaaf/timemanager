@@ -1,7 +1,6 @@
 # Database model
 
-This document describes the SQLite schema in `database/timemanager.db`.
-It reflects the schema after migrations 001, 002, 003, 004, and 005.
+This document describes the canonical SQLite schema in `database/schema.sql`.
 
 ## Entity relationship summary
 
@@ -29,9 +28,9 @@ event    0..* ───── 0..* note_events   0..* ───── 1 note
 - Deleting a contact deletes its social profiles and its event-contact links,
   but not events. Deleting an event deletes its event-contact links, but not
   contacts.
-- The database schema does not enforce the one-link-per-event/contact rule.
-  Application-level enforcement is not implemented yet, so duplicate pairs
-  can currently be inserted.
+- Application use cases prevent duplicate event/contact assignments. The
+  database does not enforce this rule, so direct DB-layer inserts can bypass
+  the application-level check.
 
 ## Tables
 
@@ -48,7 +47,7 @@ Stores a person's contact details.
 | `version` | `INTEGER` | No | — | Optimistic-lock version |
 | `name` | `TEXT` | No | — | Contact name |
 | `street` | `TEXT` | No | — | Street address |
-| `postcode` | `NUMERIC` | No | — | Postal code |
+| `zip` | `TEXT` | No | — | Postal/ZIP code, stored as text to preserve leading zeros |
 | `city` | `TEXT` | No | — | City |
 | `phone` | `TEXT` | Yes | `NULL` | Phone number |
 | `email` | `TEXT` | Yes | `NULL` | Email address |

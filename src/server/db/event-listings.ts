@@ -78,7 +78,7 @@ interface EventWithContactRow {
   contact_version: number | null;
   contact_name: string | null;
   contact_street: string | null;
-  contact_postcode: number | string | null;
+  contact_zip: string | null;
   contact_city: string | null;
   contact_phone: string | null;
   contact_email: string | null;
@@ -106,7 +106,7 @@ export function listEventsWithContacts(): EventWithContactsListing[] {
          contact."version" AS contact_version,
          contact."name" AS contact_name,
          contact."street" AS contact_street,
-         contact."postcode" AS contact_postcode,
+         contact."zip" AS contact_zip,
          contact."city" AS contact_city,
          contact."phone" AS contact_phone,
          contact."email" AS contact_email,
@@ -146,7 +146,7 @@ export function listEventsWithContacts(): EventWithContactsListing[] {
       row.contact_version !== null &&
       row.contact_name !== null &&
       row.contact_street !== null &&
-      row.contact_postcode !== null &&
+      row.contact_zip !== null &&
       row.contact_city !== null
     ) {
       listing.contacts.push({
@@ -155,7 +155,7 @@ export function listEventsWithContacts(): EventWithContactsListing[] {
           version: row.contact_version,
           name: row.contact_name,
           street: row.contact_street,
-          postcode: row.contact_postcode,
+          zip: row.contact_zip,
           city: row.contact_city,
           phone: row.contact_phone,
           email: row.contact_email,

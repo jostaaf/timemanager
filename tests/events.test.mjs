@@ -255,12 +255,13 @@ test("application event listings cover all, time, name, and contact queries", ()
       record.key,
       contacts.map(({ contact: linkedContact, role }) => [
         linkedContact.key,
+        linkedContact.zip,
         role,
       ]),
     ]),
     [
-      [4803, [[person.key, null], [secondPerson.key, null]]],
-      [4804, [[person.key, null]]],
+      [4803, [[person.key, "12345", null], [secondPerson.key, "12345", null]]],
+      [4804, [[person.key, "12345", null]]],
       [4805, []],
     ],
   );

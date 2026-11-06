@@ -5,7 +5,7 @@ export interface ContactTable {
   'version': number;
   'name': string;
   'street': string;
-  'postcode': number | string;
+  'zip': string;
   'city': string;
   'phone': string | null;
   'email': string | null;

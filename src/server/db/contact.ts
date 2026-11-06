@@ -56,9 +56,9 @@ export function insertContact(
   const inserted = db
     .prepare<NewContactRecord, ContactRecord>(
       `INSERT INTO contact
-        ("key", "version", "name", "street", "postcode", "city", "phone", "email", "tag", "comment")
+        ("key", "version", "name", "street", "zip", "city", "phone", "email", "tag", "comment")
        VALUES
-        (@key, @version, @name, @street, @postcode, @city, @phone, @email, @tag, @comment)
+        (@key, @version, @name, @street, @zip, @city, @phone, @email, @tag, @comment)
        RETURNING *`,
     )
     .get(record);
@@ -81,7 +81,7 @@ export function listContacts(
   const filters: [column: string, value: string][] = [
     ['"name" COLLATE NOCASE', criteria.name ?? ""],
     ['"street" COLLATE NOCASE', criteria.address ?? ""],
-    ['CAST("postcode" AS TEXT) COLLATE NOCASE', criteria.zip ?? ""],
+    ['"zip" COLLATE NOCASE', criteria.zip ?? ""],
     ['"city" COLLATE NOCASE', criteria.city ?? ""],
     ['"phone" COLLATE NOCASE', criteria.phone ?? ""],
     ['"email" COLLATE NOCASE', criteria.email ?? ""],
@@ -127,7 +127,7 @@ export function listContacts(
   const sortColumns: Record<ContactSortField, string> = {
     name: '"name" COLLATE NOCASE',
     address: '"street" COLLATE NOCASE',
-    zip: 'CAST("postcode" AS TEXT) COLLATE NOCASE',
+    zip: '"zip" COLLATE NOCASE',
     city: '"city" COLLATE NOCASE',
     phone: '"phone" COLLATE NOCASE',
     email: '"email" COLLATE NOCASE',

@@ -66,7 +66,7 @@ application-provided key model.
 Contact aggregate use cases are in `contacts/`:
 
 - `listContactsMatching` lists all contacts or filters by any combination of
-  name, street address, postcode, city, phone, email, tag, social platform,
+  name, street address, zip, city, phone, email, tag, social platform,
   and/or social user ID. Non-empty text criteria use case-insensitive
   substring matching and are combined with AND. Social platform matching is
   exact and case-insensitive. `%`, `_`, and `!` in search values are treated
@@ -379,7 +379,7 @@ const contact = insertContact({
   version: 1,
   name: "Alex Example",
   street: "1 Example Street",
-  postcode: 12345,
+  zip: "01234",
   city: "Example City",
   phone: null,
   email: null,

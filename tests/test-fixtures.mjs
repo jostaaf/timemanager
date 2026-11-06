@@ -131,7 +131,7 @@ function contact(key) {
     version: 1,
     name: `Contact ${key}`,
     street: "1 Test Street",
-    postcode: 12345,
+    zip: "12345",
     city: "Test City",
     phone: null,
     email: null,

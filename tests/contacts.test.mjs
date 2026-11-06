@@ -198,22 +198,27 @@ test("application lists all contacts and searches name, address, zip, and city",
     ...contact(3801),
     name: "Alice Example",
     street: "12 Oak Street",
-    postcode: 12345,
+    zip: "12345",
     city: "Northville",
   });
   insertContact({
     ...contact(3802),
     name: "Bob Example",
     street: "89 Pine Road",
-    postcode: 54321,
+    zip: "54321",
     city: "Southville",
   });
   insertContact({
     ...contact(3803),
     name: "Alicia Other",
     street: "12 Oak Avenue",
-    postcode: "12-345",
+    zip: "12-345",
     city: "Northville",
+  });
+  insertContact({
+    ...contact(3804),
+    name: "Zero Prefix",
+    zip: "01234",
   });
 
   assert.deepEqual(
@@ -222,7 +227,7 @@ test("application lists all contacts and searches name, address, zip, and city",
       .map((record) => record.key),
     [3801, 3803, 3802],
   );
-  assert.equal(listContactsMatching().length, existingContacts.length + 3);
+  assert.equal(listContactsMatching().length, existingContacts.length + 4);
   assert.deepEqual(
     listContactsMatching({ name: "alice" }).map((record) => record.key),
     [3801],
@@ -234,6 +239,14 @@ test("application lists all contacts and searches name, address, zip, and city",
   assert.deepEqual(
     listContactsMatching({ zip: "12-3" }).map((record) => record.key),
     [3803],
+  );
+  assert.deepEqual(
+    listContactsMatching({ zip: "012" }).map((record) => record.key),
+    [3804],
+  );
+  assert.equal(
+    listContactsMatching({ name: "zero prefix" })[0].zip,
+    "01234",
   );
   assert.deepEqual(
     listContactsMatching({ city: "NORTH" }).map((record) => record.key),
