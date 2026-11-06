@@ -10,6 +10,8 @@ the corresponding TypeScript record types.
 The current database file, `database/timemanager.db`, is the schema source of
 truth. The generated types provide compile-time checks for application code;
 they do not validate arbitrary data at runtime.
+See the [database model document](./database-model.md) for the complete table,
+relationship, foreign-key, and index reference.
 
 ## Project layout
 
@@ -23,7 +25,10 @@ they do not validate arbitrary data at runtime.
 | `src/server/db/event.ts` | CRUD statements for `event` |
 | `src/server/db/event-contacts.ts` | CRUD statements for `event_contacts` |
 | `src/server/db/optimistic-update.ts` | Shared compare-and-update implementation |
+| `src/server/db/contact-service.ts` | Atomic contact and social-record operations |
+| `src/server/db/event-service.ts` | Atomic event and event-contact operations |
 | `scripts/generate-db-types.py` | Reads SQLite metadata and regenerates `types.ts` |
+| `scripts/migrate-002-relationships.py` | Safely applies relationship migration 002 |
 | `database/migrations/` | Ordered SQL changes to an existing database |
 
 ## Database connection
@@ -39,7 +44,52 @@ export TIMEMANAGER_DB_PATH=/path/to/timemanager.db
 Set this environment variable when starting the application.
 `better-sqlite3` is synchronous. Database functions return their results
 directly rather than returning promises. SQLite and database errors are allowed
-to propagate to the caller.
+to propagate to the caller. The shared connection enables SQLite foreign-key
+enforcement; any connection opened outside the application must enable it too.
+
+## Relationships and aggregate operations
+
+The database enforces these relationships:
+
+- A contact may have zero or more `contact_socials` records. Each social record
+  must reference an existing contact.
+- `event` and `contact` are independent entities with a many-to-many
+  relationship through `event_contacts`. An event may have no contacts or many
+  contacts; a contact may have no events or be linked to many events. Each
+  `event_contacts` row links exactly one existing event to one existing
+  contact.
+- Deleting a contact cascades only to its `contact_socials` and
+  `event_contacts` rows. It never deletes an event. Deleting an event cascades
+  only to its `event_contacts` rows; it never deletes a contact. These
+  link-only cascades are performed by SQLite as part of the parent delete.
+
+Use the aggregate service functions when creating a parent together with its
+children:
+
+- `createContactWithSocials(contact, socials)` creates the contact and all
+  supplied social records in one transaction. Each social's `contact_key` is
+  assigned from the new contact; callers do not provide it.
+- `createEventWithContacts(event, contacts)` creates the event and all supplied
+  contact links in one transaction. Each link's `event_key` is assigned from
+  the new event; callers do not provide it. Every `contact_key` must refer to
+  an existing contact.
+
+If any insert fails, the transaction rolls back the parent and all children,
+so no partial aggregate is saved. The lower-level child insert functions are
+also protected by foreign keys. A parent delete uses the existing
+version-checked delete function, with its cascade occurring atomically.
+
+The previous `event_contacts` schema had no `event_key`, so existing link rows
+cannot be assigned to an event automatically. Migration 002 refuses to run
+while such rows exist rather than discarding or guessing their relationship.
+Apply it once with:
+
+```sh
+npm run db:migrate:relationships
+```
+
+The migration preserves existing `contact_socials` and adds cascading
+references to both parent tables. Back up the database before applying it.
 
 ## Generated record types
 
@@ -74,8 +124,59 @@ Do not edit `types.ts` by hand. Regenerate it with:
 npm run db:types
 ```
 
-Both `npm run check` and `npm run build` run the generator first. Python 3 and
+The `check`, `build`, and `test` commands run the generator first. Python 3 and
 the `sqlite3` Python module must be available for these commands.
+
+## Tests
+
+### Commands
+
+| Command | Purpose | Writes to the project database? |
+| --- | --- | --- |
+| `npm run db:types` | Regenerate TypeScript types from the schema | No; generator opens the database read-only |
+| `npm run check` | Regenerate types and type-check without emitting build output | No |
+| `npm run build` | Regenerate types and compile TypeScript into `dist/` | No |
+| `npm test` | Build the project, then run all database-layer tests | No |
+
+Run the full test suite from the project root:
+
+```sh
+npm test
+```
+
+To run the tests without rebuilding (after `npm run build`), or to filter by a
+test name, use Node's test runner directly:
+
+```sh
+node --test tests/*.test.mjs
+node --test --test-name-pattern="optimistic locking" tests/db-layer.test.mjs
+```
+
+### Isolation and coverage
+
+`npm test` runs `npm run build` first. The test file then opens
+`database/timemanager.db` read-only and copies only its table and index
+definitions into a new temporary database under the operating system's
+temporary directory. It copies no rows. The application connection is pointed
+at that temporary database for the duration of the tests. Inserts, updates,
+deletes, relationship cascades, and rollback checks all run there. On normal
+test completion, the connection is closed and the temporary directory is
+removed.
+
+The suite covers:
+
+- Insert, update, and delete for all four tables.
+- Optimistic-lock version increments, stale-version conflicts, and missing
+  records for update and delete.
+- Foreign-key rejection when a child references a missing parent.
+- Atomic creation of a contact with socials and an event with contacts,
+  including rollback when a child insert fails.
+- Parent deletion cascading only to relationship rows, while leaving the
+  other parent record intact.
+- Contacts and events with no relationship rows.
+
+The test command does not modify user data in `database/timemanager.db`.
+It does regenerate `src/server/db/types.ts` and compile files under `dist/`.
 
 ## CRUD behavior
 
@@ -160,12 +261,14 @@ if (deletion.status === "not_found") {
 Schema changes are made through SQL migrations. Type generation does not create
 or migrate tables; it reflects the schema already present in the database.
 
-1. Add an ordered SQL file under `database/migrations/`.
-2. Back up the database, then apply each migration once with SQLite. For the
-   current version-column migration:
+1. Add an ordered SQL migration under `database/migrations/` and a runner if
+   the migration needs precondition checks.
+2. Back up the database, then apply each migration once. The existing
+   migrations can be applied with:
 
    ```sh
    sqlite3 database/timemanager.db < database/migrations/001_add_event_contacts_version.sql
+   npm run db:migrate:relationships
    ```
 
 3. Run `npm run db:types` to regenerate the record types.

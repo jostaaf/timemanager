@@ -16,8 +16,10 @@ export function insertEventContact(
 ): EventContactsRecord {
   const inserted = db
     .prepare<NewEventContactsRecord, EventContactsRecord>(
-      `INSERT INTO event_contacts ("key", "version", "contact_key", "role")
-       VALUES (@key, @version, @contact_key, @role)
+      `INSERT INTO event_contacts
+        ("key", "version", "event_key", "contact_key", "role")
+       VALUES
+        (@key, @version, @event_key, @contact_key, @role)
        RETURNING *`,
     )
     .get(record);

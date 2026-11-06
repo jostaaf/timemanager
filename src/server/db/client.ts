@@ -6,3 +6,4 @@ const databasePath =
   fileURLToPath(new URL("../../../database/timemanager.db", import.meta.url));
 
 export const db = new Database(databasePath);
+db.pragma("foreign_keys = ON");

@@ -42,9 +42,10 @@ export type EventUpdate = Partial<Omit<EventRecord, "key" | "version">>;
 
 export interface EventContactsTable {
   'key': number;
+  'version': number;
+  'event_key': number;
   'contact_key': number;
   'role': string | null;
-  'version': number;
 }
 export type EventContactsRecord = EventContactsTable;
 export type NewEventContactsRecord = EventContactsRecord;

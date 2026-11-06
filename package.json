@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "db:types": "python3 scripts/generate-db-types.py",
+    "db:migrate:relationships": "python3 scripts/migrate-002-relationships.py",
     "build": "npm run db:types && tsc",
-    "check": "npm run db:types && tsc --noEmit"
+    "check": "npm run db:types && tsc --noEmit",
+    "test": "npm run build && node --test tests/*.test.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0"
