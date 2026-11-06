@@ -5,11 +5,11 @@ import {
   type OptimisticDeleteResult,
   type OptimisticUpdateResult,
 } from "./optimistic-update.js";
-import type { NewNoteRecord, NoteRecord, NoteUpdate } from "./types.js";
+import type { NoteRecord, NoteUpdate } from "./types.js";
 
-export type CreateNoteInput = Omit<
-  NewNoteRecord,
-  "created_at" | "version"
+export type CreateNoteInput = Pick<
+  NoteRecord,
+  "key" | "created_at" | "heading" | "text"
 >;
 
 function assertNonBlank(value: string, field: "heading" | "text"): void {
@@ -24,15 +24,16 @@ export function insertNote(input: CreateNoteInput): NoteRecord {
 
   const inserted = db
     .prepare<
-      Pick<NoteRecord, "key" | "heading" | "text">,
+      Pick<NoteRecord, "key" | "created_at" | "heading" | "text">,
       NoteRecord
     >(
-      `INSERT INTO note ("key", "heading", "text")
-       VALUES (@key, @heading, @text)
+      `INSERT INTO note ("key", "created_at", "heading", "text")
+       VALUES (@key, @created_at, @heading, @text)
        RETURNING *`,
     )
     .get({
       key: input.key,
+      created_at: input.created_at,
       heading: input.heading,
       text: input.text,
     });

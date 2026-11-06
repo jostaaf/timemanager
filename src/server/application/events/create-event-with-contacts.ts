@@ -6,7 +6,7 @@ import {
   type NewEventContact,
 } from "../../db/event-service.js";
 import type { NewEventRecord } from "../../db/types.js";
-import { isUtcIsoTimestamp } from "./timestamps.js";
+import { isUtcIsoTimestamp } from "../timestamps.js";
 
 export type CreateEventWithContactsResult =
   | ({ status: "created" } & EventWithContacts)

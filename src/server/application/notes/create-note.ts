@@ -5,10 +5,13 @@ import {
   linkNoteToContact,
   linkNoteToEvent,
 } from "../../db/note-links.js";
-import { insertNote, type CreateNoteInput } from "../../db/note.js";
+import { insertNote } from "../../db/note.js";
 import type { NoteRecord } from "../../db/types.js";
 
-export interface CreateNoteWithAssignmentsInput extends CreateNoteInput {
+export interface CreateNoteWithAssignmentsInput {
+  key: number;
+  heading: string;
+  text: string;
   contactKeys?: readonly number[];
   eventKeys?: readonly number[];
 }
@@ -63,7 +66,12 @@ export function createNote(
       }
     }
 
-    let note = insertNote(input);
+    let note = insertNote({
+      key: input.key,
+      created_at: new Date().toISOString(),
+      heading: input.heading,
+      text: input.text,
+    });
     for (const contactKey of contactKeys) {
       const result = linkNoteToContact(note.key, note.version, contactKey);
       if (result.status !== "updated") {
@@ -79,6 +87,11 @@ export function createNote(
       note = result.record;
     }
 
-    return { status: "created", note, contactKeys: [...contactKeys], eventKeys: [...eventKeys] };
+    return {
+      status: "created",
+      note,
+      contactKeys: [...contactKeys],
+      eventKeys: [...eventKeys],
+    };
   });
 }

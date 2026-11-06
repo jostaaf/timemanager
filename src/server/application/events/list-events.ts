@@ -9,7 +9,7 @@ import {
   type EventWithContactsListing,
 } from "../../db/event-listings.js";
 import type { EventRecord } from "../../db/types.js";
-import { assertUtcIsoTimestamp } from "./timestamps.js";
+import { assertUtcIsoTimestamp } from "../timestamps.js";
 
 export function listAllEvents(): EventRecord[] {
   return listEvents();

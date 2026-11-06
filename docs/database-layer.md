@@ -112,7 +112,9 @@ Note use cases are in `notes/`:
 
 - `createNote` creates a standalone note or creates it with optional contact
   and event assignments. It checks parent existence and duplicate keys before
-  inserting, and creates the note and assignments atomically.
+  inserting, generates `created_at` in application code as a UTC ISO-8601
+  timestamp (`YYYY-MM-DDTHH:mm:ss.sssZ`), and creates the note and assignments
+  atomically.
 - `updateNoteWithAssignments` updates note content and optionally replaces the
   complete contact and/or event assignment lists. Omitted assignment lists
   remain unchanged; empty lists remove all links. Updates use the expected note
@@ -122,8 +124,9 @@ Note use cases are in `notes/`:
   Foreign-key cascades remove assignment rows only; contacts and events remain.
 
 Assignment changes increment the note version through the note-link operations.
-The database-generated creation timestamp is not editable through the
-application use case.
+The application-generated creation timestamp is not editable through the
+application use case. The database has no default for `created_at`, so inserts
+must supply the timestamp.
 
 ## Database connection
 
@@ -214,6 +217,19 @@ existing note assignments and note content. Apply it after migration 003:
 npm run db:migrate:note-links
 npm run db:types
 ```
+
+Migration 005 removes the database-generated timestamp default and converts
+existing note creation times to canonical UTC ISO-8601 text. Apply it after
+migration 004:
+
+```sh
+npm run db:migrate:note-timestamps
+npm run db:types
+```
+
+The migration preserves note records and assignments, and stops if a stored
+timestamp cannot be safely interpreted as either the previous SQLite UTC
+format or the canonical application format.
 
 ## Generated record types
 
@@ -341,18 +357,18 @@ from the typed update object's keys and are quoted as SQLite identifiers.
 
 The CRUD insert functions require all non-null fields that do not have a
 database default, including `key`. `event_contacts` and `note` start at version
-`1` using their database defaults. `insertNote` generates `created_at` in
-SQLite and accepts `key`, `heading`, `text`, and an optional `event_key`,
-`contact_key`, or both; both assignments may be omitted. Any supplied parent
-must exist. Whitespace-only headings and text are rejected in both the API and
-database.
-The note update function uses the same optimistic-locking behavior as the
-other tables and does not allow changes to `created_at`.
+`1` using their database defaults. The application `createNote` use case
+generates the required `created_at` timestamp in canonical UTC ISO-8601 format;
+the database has no timestamp default. Note assignments are created through
+the application use case and its note-link operations. Whitespace-only
+headings and text are rejected in both the API and database. The note update
+function uses the same optimistic-locking behavior as the other tables and
+does not allow changes to `created_at`.
 
 When the application deletes a contact or event, it increments versions of
-notes whose corresponding parent reference is cleared. This code runs in the
-same transaction as the parent delete. Notes remain editable even if both
-parents have since been deleted. Direct SQL parent deletion also removes
+notes whose corresponding join-table links are removed. This code runs in the
+same transaction as the parent delete. Notes remain editable even after all
+their parents have been deleted. Direct SQL parent deletion also removes
 matching note-link rows through foreign-key cascades, but bypasses the
 application's note-version increments; perform deletes through the table
 modules to preserve optimistic-locking behavior.

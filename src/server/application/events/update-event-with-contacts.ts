@@ -15,7 +15,7 @@ import type {
   EventRecord,
   EventUpdate,
 } from "../../db/types.js";
-import { isUtcIsoTimestamp } from "./timestamps.js";
+import { isUtcIsoTimestamp } from "../timestamps.js";
 
 type NewLink = {
   type: "add";

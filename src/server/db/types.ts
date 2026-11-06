@@ -59,7 +59,7 @@ export interface NoteTable {
   'text': string;
 }
 export type NoteRecord = NoteTable;
-export type NewNoteRecord = Omit<NoteRecord, "version" | "created_at"> & Partial<Pick<NoteRecord, "version" | "created_at">>;
+export type NewNoteRecord = Omit<NoteRecord, "version"> & Partial<Pick<NoteRecord, "version">>;
 export type NoteUpdate = Partial<Omit<NoteRecord, "key" | "version" | "created_at">>;
 
 export interface NoteContactsTable {

@@ -53,5 +53,12 @@ npm run db:migrate:note-links
 npm run db:types
 ```
 
+To normalize existing note creation timestamps to UTC ISO-8601 text:
+
+```sh
+npm run db:migrate:note-timestamps
+npm run db:types
+```
+
 See the database-layer documentation for setup details and the recommended
 workflow when changing the SQLite schema.

@@ -106,7 +106,7 @@ const { updateNoteWithAssignments } = await import(
 const { deleteNoteWithAssignments } = await import(
   "../dist/server/application/notes/delete-note.js"
 );
-const { insertNote, updateNote, deleteNote } = await import(
+const { insertNote: insertNoteRecord, updateNote, deleteNote } = await import(
   "../dist/server/db/note.js"
 );
 const {
@@ -124,6 +124,13 @@ after(() => {
   db.close();
   rmSync(temporaryDirectory, { recursive: true, force: true });
 });
+
+function insertNote(input) {
+  return insertNoteRecord({
+    created_at: "2026-03-01T00:00:00.000Z",
+    ...input,
+  });
+}
 
 function contact(key) {
   return {
@@ -916,7 +923,18 @@ test("notes require content while parent assignments are optional", () => {
   });
 
   assert.equal(eventNote.version, 1);
-  assert.match(eventNote.created_at, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+  assert.match(
+    eventNote.created_at,
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+  );
+  assert.throws(
+    () =>
+      db.prepare(
+        `INSERT INTO note ("key", "heading", "text")
+         VALUES (?, ?, ?)`,
+      ).run(7015, "No timestamp", "Timestamp is required"),
+    { code: "SQLITE_CONSTRAINT_NOTNULL" },
+  );
   assert.deepEqual(listEventsForNote(eventNote.key), []);
   assert.deepEqual(listContactsForNote(contactNote.key), []);
   assert.deepEqual(listEventsForNote(standaloneNote.key), []);
@@ -1062,16 +1080,21 @@ test("notes require content while parent assignments are optional", () => {
   assert.throws(
     () =>
       db.prepare(
-        `INSERT INTO note ("key", "heading", "text")
-         VALUES (?, ?, ?)`,
-      ).run(7010, "Blank", " \t\n "),
+        `INSERT INTO note ("key", "created_at", "heading", "text")
+         VALUES (?, ?, ?, ?)`,
+      ).run(7010, "2026-03-01T00:00:00.000Z", "Blank", " \t\n "),
     { code: "SQLITE_CONSTRAINT_CHECK" },
   );
   assert.doesNotThrow(() =>
     db.prepare(
-      `INSERT INTO note ("key", "heading", "text")
-       VALUES (?, ?, ?)`,
-    ).run(7011, "Standalone SQL note", "No parent assignment"),
+      `INSERT INTO note ("key", "created_at", "heading", "text")
+       VALUES (?, ?, ?, ?)`,
+    ).run(
+      7011,
+      "2026-03-01T00:00:00.000Z",
+      "Standalone SQL note",
+      "No parent assignment",
+    ),
   );
 });
 
@@ -1167,6 +1190,12 @@ test("application creates standalone or assigned notes atomically", () => {
   });
   assert.equal(standalone.status, "created");
   assert.equal(standalone.note.version, 1);
+  assert.match(
+    standalone.note.created_at,
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+  );
+  assert.ok(Number.isFinite(Date.parse(standalone.note.created_at)));
+  assert.ok(Math.abs(Date.now() - Date.parse(standalone.note.created_at)) < 5000);
   assert.deepEqual(standalone.contactKeys, []);
   assert.deepEqual(standalone.eventKeys, []);
 
@@ -1351,6 +1380,58 @@ test("note-link migration preserves existing note contents and assignments", () 
       .prepare('SELECT "note_key", "event_key" FROM note_events ORDER BY "note_key"')
       .all(),
     [{ note_key: 5, event_key: 3 }],
+  );
+
+  const legacyTimestamps = legacyDatabase
+    .prepare('SELECT "key", "created_at" FROM note ORDER BY "key"')
+    .all();
+  legacyDatabase.pragma("foreign_keys = OFF");
+  legacyDatabase.exec(
+    readFileSync(
+      new URL(
+        "../database/migrations/005_note_created_at_iso8601.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  legacyDatabase.pragma("foreign_keys = ON");
+
+  const migratedTimestamps = legacyDatabase
+    .prepare('SELECT "key", "created_at" FROM note ORDER BY "key"')
+    .all();
+  assert.deepEqual(
+    migratedTimestamps.map((row) => row.key),
+    legacyTimestamps.map((row) => row.key),
+  );
+  assert.deepEqual(
+    migratedTimestamps.map((row) => row.created_at),
+    legacyTimestamps.map((row) => `${row.created_at.replace(" ", "T")}.000Z`),
+  );
+  assert.ok(
+    migratedTimestamps.every((row) =>
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(
+        row.created_at,
+      ),
+    ),
+  );
+  assert.equal(
+    legacyDatabase
+      .pragma("table_info('note')")
+      .find((column) => column.name === "created_at").dflt_value,
+    null,
+  );
+  assert.equal(
+    legacyDatabase
+      .prepare("SELECT count(*) AS count FROM note_contacts")
+      .get().count,
+    2,
+  );
+  assert.equal(
+    legacyDatabase
+      .prepare("SELECT count(*) AS count FROM note_events")
+      .get().count,
+    1,
   );
   assert.deepEqual(legacyDatabase.pragma("foreign_key_check"), []);
   legacyDatabase.close();

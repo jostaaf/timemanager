@@ -1,7 +1,7 @@
 # Database model
 
 This document describes the SQLite schema in `database/timemanager.db`.
-It reflects the schema after migrations 001, 002, 003, and 004.
+It reflects the schema after migrations 001, 002, 003, 004, and 005.
 
 ## Entity relationship summary
 
@@ -87,7 +87,9 @@ Stores an event independently of its participating contacts.
 | `comment` | `TEXT` | Yes | `NULL` | Optional notes |
 
 All text columns use `RTRIM` collation. The schema stores `start` and `end` as
-text; it does not enforce a particular date/time format.
+text and does not enforce their format. Application operations require
+canonical UTC ISO-8601 values (`YYYY-MM-DDTHH:mm:ss.sssZ`) so text ordering is
+chronological.
 
 ### `event_contacts`
 
@@ -113,7 +115,7 @@ Stores a standalone note, optionally assigned to a contact, an event, or both.
 | --- | --- | --- | --- | --- |
 | `key` | `INTEGER` | No | — | Primary key |
 | `version` | `INTEGER` | No | `1` | Optimistic-lock version |
-| `created_at` | `TEXT` | No | `CURRENT_TIMESTAMP` | UTC creation timestamp in SQLite's `YYYY-MM-DD HH:MM:SS` format |
+| `created_at` | `TEXT` | No | — | Application-generated UTC ISO-8601 timestamp (`YYYY-MM-DDTHH:mm:ss.sssZ`) |
 | `heading` | `TEXT` | No | — | Nonblank heading |
 | `text` | `TEXT` | No | — | Nonblank note body |
 `heading` and `text` use `RTRIM` collation and database checks reject values

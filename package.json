@@ -8,6 +8,7 @@
     "db:migrate:relationships": "python3 scripts/migrate-002-relationships.py",
     "db:migrate:notes": "python3 scripts/migrate-003-notes.py",
     "db:migrate:note-links": "python3 scripts/migrate-004-note-links.py",
+    "db:migrate:note-timestamps": "python3 scripts/migrate-005-note-created-at.py",
     "build": "npm run db:types && tsc",
     "check": "npm run db:types && tsc --noEmit",
     "test": "npm run build && node --test tests/*.test.mjs"
