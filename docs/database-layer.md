@@ -24,11 +24,14 @@ relationship, foreign-key, and index reference.
 | `src/server/db/contact-socials.ts` | CRUD statements for `contact_socials` |
 | `src/server/db/event.ts` | CRUD statements for `event` |
 | `src/server/db/event-contacts.ts` | CRUD statements for `event_contacts` |
+| `src/server/db/note.ts` | CRUD statements and validation for `note` |
 | `src/server/db/optimistic-update.ts` | Shared compare-and-update implementation |
+| `src/server/db/delete-parent.ts` | Parent deletion and linked-note version updates |
 | `src/server/db/contact-service.ts` | Atomic contact and social-record operations |
 | `src/server/db/event-service.ts` | Atomic event and event-contact operations |
 | `scripts/generate-db-types.py` | Reads SQLite metadata and regenerates `types.ts` |
 | `scripts/migrate-002-relationships.py` | Safely applies relationship migration 002 |
+| `scripts/migrate-003-notes.py` | Applies the note-table migration |
 | `database/migrations/` | Ordered SQL changes to an existing database |
 
 ## Database connection
@@ -62,6 +65,11 @@ The database enforces these relationships:
   `event_contacts` rows. It never deletes an event. Deleting an event cascades
   only to its `event_contacts` rows; it never deletes a contact. These
   link-only cascades are performed by SQLite as part of the parent delete.
+- A note must have nonblank heading and text. Its creation timestamp is
+  assigned by SQLite. Event and contact assignments are optional; a note may
+  exist independently or be linked to either or both. Deleting a linked parent
+  sets that note's corresponding foreign key to `NULL`, increments its version
+  in the application delete transaction, and preserves the note.
 
 Use the aggregate service functions when creating a parent together with its
 children:
@@ -90,6 +98,16 @@ npm run db:migrate:relationships
 
 The migration preserves existing `contact_socials` and adds cascading
 references to both parent tables. Back up the database before applying it.
+
+The notes migration adds the `note` table, its parent indexes, and foreign keys
+that use `ON DELETE SET NULL`; it does not alter or remove existing records.
+Notes may have neither parent assigned.
+Apply it with:
+
+```sh
+npm run db:migrate:notes
+npm run db:types
+```
 
 ## Generated record types
 
@@ -165,7 +183,7 @@ removed.
 
 The suite covers:
 
-- Insert, update, and delete for all four tables.
+- Insert, update, and delete for all four original tables, plus note CRUD.
 - Optimistic-lock version increments, stale-version conflicts, and missing
   records for update and delete.
 - Foreign-key rejection when a child references a missing parent.
@@ -174,6 +192,8 @@ The suite covers:
 - Parent deletion cascading only to relationship rows, while leaving the
   other parent record intact.
 - Contacts and events with no relationship rows.
+- Note creation, content validation, optional parent assignments, optimistic
+  locking, and note preservation after deleting one or both assigned parents.
 
 The test command does not modify user data in `database/timemanager.db`.
 It does regenerate `src/server/db/types.ts` and compile files under `dist/`.
@@ -199,6 +219,9 @@ from the typed update object's keys and are quoted as SQLite identifiers.
 - The version comparison, update, and conflict check run in one SQLite
   transaction. An update with no changed fields checks the expected version
   and returns the current row without incrementing the version.
+- Note updates also cannot change `created_at`; heading and text must remain
+  nonblank. A note that has become unassigned because its parents were deleted
+  remains editable.
 - **Delete** requires the row `key` and its `expectedVersion`. It deletes only
   when both match, and returns `{ status: "deleted", record }`. If the row
   exists at another version it returns
@@ -209,10 +232,23 @@ from the typed update object's keys and are quoted as SQLite identifiers.
   outcome; insert failures such as a duplicate key are raised by SQLite and
   propagate to the caller.
 
-The CRUD insert functions require all non-null fields, including `key` and
-`version`. The `event_contacts` migration sets a database default of `1` for
-existing rows and direct SQL inserts, but the typed insert function still
-requires the caller to provide the initial version.
+The CRUD insert functions require all non-null fields that do not have a
+database default, including `key`. `event_contacts` and `note` start at version
+`1` using their database defaults. `insertNote` generates `created_at` in
+SQLite and accepts `key`, `heading`, `text`, and an optional `event_key`,
+`contact_key`, or both; both assignments may be omitted. Any supplied parent
+must exist. Whitespace-only headings and text are rejected in both the API and
+database.
+The note update function uses the same optimistic-locking behavior as the
+other tables and does not allow changes to `created_at`.
+
+When the application deletes a contact or event, it increments versions of
+notes whose corresponding parent reference is cleared. This code runs in the
+same transaction as the parent delete. Notes remain editable even if both
+parents have since been deleted. Direct SQL parent deletion still preserves
+notes through `ON DELETE SET NULL`, but bypasses the application's version
+increment; perform deletes through the table modules to preserve optimistic
+locking behavior.
 
 Example:
 

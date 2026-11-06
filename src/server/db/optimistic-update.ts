@@ -15,7 +15,12 @@ export type OptimisticDeleteResult<Record> =
   | { status: "conflict"; currentVersion: number }
   | { status: "not_found" };
 
-type VersionedTable = "contact" | "contact_socials" | "event" | "event_contacts";
+type VersionedTable =
+  | "contact"
+  | "contact_socials"
+  | "event"
+  | "event_contacts"
+  | "note";
 
 function getCurrentVersion(
   table: VersionedTable,

@@ -48,5 +48,18 @@ export interface EventContactsTable {
   'role': string | null;
 }
 export type EventContactsRecord = EventContactsTable;
-export type NewEventContactsRecord = EventContactsRecord;
+export type NewEventContactsRecord = Omit<EventContactsRecord, "version"> & Partial<Pick<EventContactsRecord, "version">>;
 export type EventContactsUpdate = Partial<Omit<EventContactsRecord, "key" | "version">>;
+
+export interface NoteTable {
+  'key': number;
+  'version': number;
+  'created_at': string;
+  'heading': string;
+  'text': string;
+  'event_key': number | null;
+  'contact_key': number | null;
+}
+export type NoteRecord = NoteTable;
+export type NewNoteRecord = Omit<NoteRecord, "version" | "created_at"> & Partial<Pick<NoteRecord, "version" | "created_at">>;
+export type NoteUpdate = Partial<Omit<NoteRecord, "key" | "version" | "created_at">>;

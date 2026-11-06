@@ -20,10 +20,10 @@ const schema = sourceDatabase
   .prepare(
     `SELECT sql
      FROM sqlite_master
-     WHERE type IN ('table', 'index')
+     WHERE type IN ('table', 'index', 'trigger')
        AND sql IS NOT NULL
        AND name NOT LIKE 'sqlite_%'
-     ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END, name`,
+     ORDER BY CASE type WHEN 'table' THEN 0 WHEN 'index' THEN 1 ELSE 2 END, name`,
   )
   .all();
 sourceDatabase.close();
@@ -60,6 +60,9 @@ const { createContactWithSocials } = await import(
 );
 const { createEventWithContacts } = await import(
   "../dist/server/db/event-service.js"
+);
+const { insertNote, updateNote, deleteNote } = await import(
+  "../dist/server/db/note.js"
 );
 
 after(() => {
@@ -322,4 +325,168 @@ test("contacts and events may exist without relationship rows", () => {
 
   assert.equal(countRows("event_contacts", "contact_key", 6001), 0);
   assert.equal(countRows("event_contacts", "event_key", 6002), 0);
+});
+
+test("notes require content while parent assignments are optional", () => {
+  const person = insertContact(contact(7001));
+  const calendarEvent = insertEvent(event(7002));
+
+  const eventNote = insertNote({
+    key: 7003,
+    heading: "Event note",
+    text: "Details for the event.",
+    event_key: calendarEvent.key,
+  });
+  const contactNote = insertNote({
+    key: 7004,
+    heading: "Contact note",
+    text: "Details for the contact.",
+    contact_key: person.key,
+  });
+  const sharedNote = insertNote({
+    key: 7005,
+    heading: "Shared note",
+    text: "Details for both.",
+    event_key: calendarEvent.key,
+    contact_key: person.key,
+  });
+  const standaloneNote = insertNote({
+    key: 7012,
+    heading: "Standalone note",
+    text: "Not linked to an event or contact.",
+  });
+
+  assert.equal(eventNote.version, 1);
+  assert.match(eventNote.created_at, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+  assert.equal(eventNote.contact_key, null);
+  assert.equal(contactNote.event_key, null);
+  assert.equal(sharedNote.event_key, calendarEvent.key);
+  assert.equal(sharedNote.contact_key, person.key);
+  assert.equal(standaloneNote.event_key, null);
+  assert.equal(standaloneNote.contact_key, null);
+  const standaloneUpdated = updateNote(standaloneNote.key, standaloneNote.version, {
+    contact_key: null,
+    event_key: null,
+  });
+  assert.equal(standaloneUpdated.status, "updated");
+  assert.equal(standaloneUpdated.record.version, standaloneNote.version + 1);
+
+  assert.throws(
+    () =>
+      insertNote({
+        key: 7006,
+        heading: " \t\n ",
+        text: "Has a body",
+        contact_key: person.key,
+      }),
+    /heading must not be empty/,
+  );
+  assert.throws(
+    () =>
+      insertNote({
+        key: 7007,
+        heading: "Has a heading",
+        text: " \t\n ",
+        event_key: calendarEvent.key,
+      }),
+    /text must not be empty/,
+  );
+  assert.throws(
+    () =>
+      insertNote({
+        key: 7009,
+        heading: "Missing event",
+        text: "Invalid reference",
+        event_key: -1,
+      }),
+    { code: "SQLITE_CONSTRAINT_FOREIGNKEY" },
+  );
+  assert.throws(
+    () =>
+      db.prepare(
+        `INSERT INTO note ("key", "heading", "text", "event_key")
+         VALUES (?, ?, ?, ?)`,
+      ).run(7010, "Blank", " \t\n ", calendarEvent.key),
+    { code: "SQLITE_CONSTRAINT_CHECK" },
+  );
+  assert.doesNotThrow(() =>
+    db.prepare(
+      `INSERT INTO note ("key", "heading", "text")
+       VALUES (?, ?, ?)`,
+    ).run(7011, "Standalone SQL note", "No parent assignment"),
+  );
+});
+
+test("notes use optimistic locking and survive deletion of linked parents", () => {
+  const person = insertContact(contact(7101));
+  const calendarEvent = insertEvent(event(7102));
+  const note = insertNote({
+    key: 7103,
+    heading: "Keep this note",
+    text: "The note outlives its linked records.",
+    event_key: calendarEvent.key,
+    contact_key: person.key,
+  });
+
+  assert.deepEqual(deleteContact(person.key, person.version + 1), {
+    status: "conflict",
+    currentVersion: person.version,
+  });
+  assert.equal(
+    db.prepare('SELECT "version" FROM note WHERE "key" = ?').get(note.key)
+      .version,
+    note.version,
+  );
+
+  const update = updateNote(note.key, note.version, {
+    heading: "Updated heading",
+  });
+  assert.equal(update.status, "updated");
+  assert.equal(update.record.version, note.version + 1);
+  assert.deepEqual(updateNote(note.key, note.version, { text: "Stale edit" }), {
+    status: "conflict",
+    currentVersion: update.record.version,
+  });
+  assert.throws(
+    () => updateNote(note.key, update.record.version, { text: " \t " }),
+    /text must not be empty/,
+  );
+  assert.equal(deleteContact(person.key, person.version).status, "deleted");
+  const afterContactDelete = db
+    .prepare('SELECT * FROM note WHERE "key" = ?')
+    .get(note.key);
+  assert.ok(afterContactDelete);
+  assert.equal(afterContactDelete.contact_key, null);
+  assert.equal(afterContactDelete.event_key, calendarEvent.key);
+  assert.equal(afterContactDelete.version, update.record.version + 1);
+  assert.equal(countRows("event", "key", calendarEvent.key), 1);
+
+  assert.equal(
+    deleteEvent(calendarEvent.key, calendarEvent.version).status,
+    "deleted",
+  );
+  const afterBothParentsDelete = db
+    .prepare('SELECT * FROM note WHERE "key" = ?')
+    .get(note.key);
+  assert.ok(afterBothParentsDelete);
+  assert.equal(afterBothParentsDelete.contact_key, null);
+  assert.equal(afterBothParentsDelete.event_key, null);
+  assert.equal(afterBothParentsDelete.version, afterContactDelete.version + 1);
+
+  const orphanUpdate = updateNote(note.key, afterBothParentsDelete.version, {
+    text: "Still editable after deleting both parents.",
+  });
+  assert.equal(orphanUpdate.status, "updated");
+  assert.equal(orphanUpdate.record.version, afterBothParentsDelete.version + 1);
+
+  assert.deepEqual(deleteNote(note.key, afterBothParentsDelete.version), {
+    status: "conflict",
+    currentVersion: orphanUpdate.record.version,
+  });
+  const deleted = deleteNote(note.key, orphanUpdate.record.version);
+  assert.equal(deleted.status, "deleted");
+  assert.equal(deleted.record.key, note.key);
+  assert.deepEqual(deleteNote(note.key, orphanUpdate.record.version), {
+    status: "not_found",
+  });
 });

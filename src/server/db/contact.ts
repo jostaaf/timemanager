@@ -5,11 +5,11 @@ import type {
 } from "./types.js";
 import { db } from "./client.js";
 import {
-  deleteRecord,
   updateRecord,
-  type OptimisticDeleteResult,
   type OptimisticUpdateResult,
 } from "./optimistic-update.js";
+import { deleteParentAndPreserveNotes } from "./delete-parent.js";
+import type { OptimisticDeleteResult } from "./optimistic-update.js";
 
 export function insertContact(
   record: NewContactRecord,
@@ -41,5 +41,10 @@ export function deleteContact(
   key: number,
   expectedVersion: number,
 ): OptimisticDeleteResult<ContactRecord> {
-  return deleteRecord<ContactRecord>("contact", key, expectedVersion);
+  return deleteParentAndPreserveNotes<ContactRecord>(
+    "contact",
+    "contact_key",
+    key,
+    expectedVersion,
+  );
 }

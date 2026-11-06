@@ -1,7 +1,7 @@
 # Database model
 
 This document describes the SQLite schema in `database/timemanager.db`.
-It reflects the schema after migrations 001 and 002.
+It reflects the schema after migrations 001, 002, and 003.
 
 ## Entity relationship summary
 
@@ -10,6 +10,9 @@ contact  1 ───── 0..* contact_socials
 
 contact  1 ───── 0..* event_contacts 0..* ───── 1 event
                        (join table)
+
+contact  (0..*) ───── note (0..1)
+event    (0..*) ───── note (0..1)
 ```
 
 - A contact may exist without social profiles, and a social profile must belong
@@ -18,6 +21,11 @@ contact  1 ───── 0..* event_contacts 0..* ───── 1 event
   any event/contact relationship.
 - `event_contacts` implements the many-to-many relationship: each row connects
   one event to one contact, and each event/contact can be linked to many rows.
+- Notes may be standalone or reference a contact, an event, or both. Each
+  assignment is optional, and deleting a parent preserves the note by clearing
+  that reference.
+- A parent may have any number of notes; each note can reference at most one
+  contact and at most one event.
 - Deleting a contact deletes its social profiles and its event-contact links,
   but not events. Deleting an event deletes its event-contact links, but not
   contacts.
@@ -96,6 +104,26 @@ event or a contact.
 `role` uses `RTRIM` collation. Deleting either referenced parent cascades
 deletion of this relationship row only.
 
+### `note`
+
+Stores a standalone note, optionally assigned to a contact, an event, or both.
+
+| Column | SQLite type | Null | Default | Description |
+| --- | --- | --- | --- | --- |
+| `key` | `INTEGER` | No | — | Primary key |
+| `version` | `INTEGER` | No | `1` | Optimistic-lock version |
+| `created_at` | `TEXT` | No | `CURRENT_TIMESTAMP` | UTC creation timestamp in SQLite's `YYYY-MM-DD HH:MM:SS` format |
+| `heading` | `TEXT` | No | — | Nonblank heading |
+| `text` | `TEXT` | No | — | Nonblank note body |
+| `event_key` | `INTEGER` | Yes | `NULL` | Optional foreign key to `event.key` |
+| `contact_key` | `INTEGER` | Yes | `NULL` | Optional foreign key to `contact.key` |
+
+`heading` and `text` use `RTRIM` collation and database checks reject values
+containing only common whitespace characters. Parent deletion uses `SET NULL`,
+not `CASCADE`, so notes and their contents are retained. Application-level
+contact and event delete functions increment the note version in the same
+transaction when they clear a reference. There are no note triggers.
+
 ## Foreign keys and delete behavior
 
 | Child table and column | References | Delete action |
@@ -103,6 +131,8 @@ deletion of this relationship row only.
 | `contact_socials.contact_key` | `contact.key` | `ON DELETE CASCADE` |
 | `event_contacts.event_key` | `event.key` | `ON DELETE CASCADE` |
 | `event_contacts.contact_key` | `contact.key` | `ON DELETE CASCADE` |
+| `note.event_key` | `event.key` | `ON DELETE SET NULL` |
+| `note.contact_key` | `contact.key` | `ON DELETE SET NULL` |
 
 Foreign-key enforcement is enabled by the application's shared connection in
 `src/server/db/client.ts`. SQLite foreign keys are connection-specific, so any
@@ -127,6 +157,9 @@ other; only matching child/join rows are removed.
 | Primary-key index | `event_contacts` | `key` | Enforces relationship-row identity |
 | `ix_event_contacts_event_key` | `event_contacts` | `event_key` ascending | Find contacts for an event and support event cascades |
 | `ix_event_contacts_contact_key` | `event_contacts` | `contact_key` ascending | Find events for a contact and support contact cascades |
+| Primary-key index | `note` | `key` | Enforces note identity |
+| `ix_note_event_key` | `note` | `event_key` ascending | Find notes assigned to an event |
+| `ix_note_contact_key` | `note` | `contact_key` ascending | Find notes assigned to a contact |
 
 SQLite creates the primary-key indexes implicitly. There is no unique index on
 `(event_key, contact_key)`, so duplicate links are currently allowed.
@@ -136,8 +169,9 @@ SQLite creates the primary-key indexes implicitly. There is no unique index on
 Every table has a non-null integer `version`. The server update layer compares
 the caller's expected version and increments the stored value on a successful
 update. Deletes also require a matching expected version. `event_contacts`
-defaults its version to `1`; inserts through the typed API still supply the
-initial version explicitly.
+and `note` default their version to `1`; inserts through the typed APIs use
+those database defaults. A note's version also increments in application code
+when deleting a parent changes one of its assignments to `NULL`.
 
 ## Schema changes
 

@@ -22,7 +22,7 @@ export function insertEventContact(
         (@key, @version, @event_key, @contact_key, @role)
        RETURNING *`,
     )
-    .get(record);
+    .get({ ...record, version: record.version ?? 1 });
   if (!inserted) {
     throw new Error("Inserting event contact did not return a record");
   }

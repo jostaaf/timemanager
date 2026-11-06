@@ -75,12 +75,27 @@ def main() -> None:
                 if not not_null and not primary_key:
                     column_type += " | null"
                 definitions.append(f"  {column!r}: {column_type};")
+            excluded_update_fields = ['"key"', '"version"']
+            if any(column[1] == "created_at" for column in columns):
+                excluded_update_fields.append('"created_at"')
+            excluded_fields = " | ".join(excluded_update_fields)
+            defaulted_columns = [column[1] for column in columns if column[4] is not None]
+            if defaulted_columns:
+                defaulted_fields = " | ".join(
+                    f'"{column}"' for column in defaulted_columns
+                )
+                new_record_type = (
+                    f'Omit<{name}Record, {defaulted_fields}> & '
+                    f'Partial<Pick<{name}Record, {defaulted_fields}>>'
+                )
+            else:
+                new_record_type = f"{name}Record"
             definitions.extend(
                 [
                     "}",
                     f"export type {name}Record = {name}Table;",
-                    f"export type New{name}Record = {name}Record;",
-                    f'export type {name}Update = Partial<Omit<{name}Record, "key" | "version">>;',
+                    f"export type New{name}Record = {new_record_type};",
+                    f"export type {name}Update = Partial<Omit<{name}Record, {excluded_fields}>>;",
                     "",
                 ]
             )

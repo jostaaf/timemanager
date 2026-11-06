@@ -35,5 +35,12 @@ To regenerate database types explicitly:
 npm run db:types
 ```
 
+After backing up the database, add the notes table with:
+
+```sh
+npm run db:migrate:notes
+npm run db:types
+```
+
 See the database-layer documentation for setup details and the recommended
 workflow when changing the SQLite schema.
