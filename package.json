@@ -1,0 +1,19 @@
+{
+  "name": "timemanager",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:types": "python3 scripts/generate-db-types.py",
+    "build": "npm run db:types && tsc",
+    "check": "npm run db:types && tsc --noEmit"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.3"
+  }
+}

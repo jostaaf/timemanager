@@ -1,0 +1,2 @@
+ALTER TABLE event_contacts
+ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
