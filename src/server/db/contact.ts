@@ -43,6 +43,7 @@ export function deleteContact(
 ): OptimisticDeleteResult<ContactRecord> {
   return deleteParentAndPreserveNotes<ContactRecord>(
     "contact",
+    "note_contacts",
     "contact_key",
     key,
     expectedVersion,

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, test } from "node:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -64,6 +64,16 @@ const { createEventWithContacts } = await import(
 const { insertNote, updateNote, deleteNote } = await import(
   "../dist/server/db/note.js"
 );
+const {
+  linkNoteToContact,
+  unlinkNoteFromContact,
+  listContactsForNote,
+  linkNoteToEvent,
+  unlinkNoteFromEvent,
+  listEventsForNote,
+  listNotesForContact,
+  listNotesForEvent,
+} = await import("../dist/server/db/note-links.js");
 
 after(() => {
   db.close();
@@ -329,26 +339,24 @@ test("contacts and events may exist without relationship rows", () => {
 
 test("notes require content while parent assignments are optional", () => {
   const person = insertContact(contact(7001));
+  const secondPerson = insertContact(contact(7013));
   const calendarEvent = insertEvent(event(7002));
+  const secondEvent = insertEvent(event(7014));
 
   const eventNote = insertNote({
     key: 7003,
     heading: "Event note",
     text: "Details for the event.",
-    event_key: calendarEvent.key,
   });
   const contactNote = insertNote({
     key: 7004,
     heading: "Contact note",
     text: "Details for the contact.",
-    contact_key: person.key,
   });
   const sharedNote = insertNote({
     key: 7005,
     heading: "Shared note",
     text: "Details for both.",
-    event_key: calendarEvent.key,
-    contact_key: person.key,
   });
   const standaloneNote = insertNote({
     key: 7012,
@@ -358,18 +366,120 @@ test("notes require content while parent assignments are optional", () => {
 
   assert.equal(eventNote.version, 1);
   assert.match(eventNote.created_at, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
-  assert.equal(eventNote.contact_key, null);
-  assert.equal(contactNote.event_key, null);
-  assert.equal(sharedNote.event_key, calendarEvent.key);
-  assert.equal(sharedNote.contact_key, person.key);
-  assert.equal(standaloneNote.event_key, null);
-  assert.equal(standaloneNote.contact_key, null);
-  const standaloneUpdated = updateNote(standaloneNote.key, standaloneNote.version, {
-    contact_key: null,
-    event_key: null,
-  });
-  assert.equal(standaloneUpdated.status, "updated");
-  assert.equal(standaloneUpdated.record.version, standaloneNote.version + 1);
+  assert.deepEqual(listEventsForNote(eventNote.key), []);
+  assert.deepEqual(listContactsForNote(contactNote.key), []);
+  assert.deepEqual(listEventsForNote(standaloneNote.key), []);
+  assert.deepEqual(listContactsForNote(standaloneNote.key), []);
+
+  let version = eventNote.version;
+  const linkedFirstEvent = linkNoteToEvent(
+    eventNote.key,
+    version,
+    calendarEvent.key,
+  );
+  assert.equal(linkedFirstEvent.status, "updated");
+  version = linkedFirstEvent.record.version;
+  const linkedSecondEvent = linkNoteToEvent(
+    eventNote.key,
+    version,
+    secondEvent.key,
+  );
+  assert.equal(linkedSecondEvent.status, "updated");
+  version = linkedSecondEvent.record.version;
+  assert.deepEqual(listEventsForNote(eventNote.key), [
+    calendarEvent.key,
+    secondEvent.key,
+  ]);
+  assert.deepEqual(
+    linkNoteToEvent(eventNote.key, version, secondEvent.key),
+    { status: "unchanged", record: linkedSecondEvent.record },
+  );
+
+  const linkedFirstContact = linkNoteToContact(
+    sharedNote.key,
+    sharedNote.version,
+    person.key,
+  );
+  assert.equal(linkedFirstContact.status, "updated");
+  const linkedSecondContact = linkNoteToContact(
+    sharedNote.key,
+    linkedFirstContact.record.version,
+    secondPerson.key,
+  );
+  assert.equal(linkedSecondContact.status, "updated");
+  const linkedFirstSharedEvent = linkNoteToEvent(
+    sharedNote.key,
+    linkedSecondContact.record.version,
+    calendarEvent.key,
+  );
+  assert.equal(linkedFirstSharedEvent.status, "updated");
+  const linkedSecondSharedEvent = linkNoteToEvent(
+    sharedNote.key,
+    linkedFirstSharedEvent.record.version,
+    secondEvent.key,
+  );
+  assert.equal(linkedSecondSharedEvent.status, "updated");
+  assert.deepEqual(listContactsForNote(sharedNote.key), [
+    person.key,
+    secondPerson.key,
+  ]);
+  assert.deepEqual(listEventsForNote(sharedNote.key), [
+    calendarEvent.key,
+    secondEvent.key,
+  ]);
+  assert.deepEqual(
+    listNotesForContact(person.key).map((note) => note.key),
+    [sharedNote.key],
+  );
+  assert.deepEqual(
+    listNotesForEvent(calendarEvent.key).map((note) => note.key),
+    [eventNote.key, sharedNote.key],
+  );
+  assert.deepEqual(
+    linkNoteToContact(-1, 1, person.key),
+    { status: "not_found" },
+  );
+  assert.deepEqual(
+    linkNoteToContact(sharedNote.key, sharedNote.version, -1),
+    { status: "conflict", currentVersion: linkedSecondSharedEvent.record.version },
+  );
+  assert.throws(
+    () => linkNoteToContact(sharedNote.key, linkedSecondSharedEvent.record.version, -1),
+    { code: "SQLITE_CONSTRAINT_FOREIGNKEY" },
+  );
+  const unlinked = unlinkNoteFromContact(
+    sharedNote.key,
+    linkedSecondSharedEvent.record.version,
+    secondPerson.key,
+  );
+  assert.equal(unlinked.status, "updated");
+  const stillLinked = unlinkNoteFromEvent(
+    sharedNote.key,
+    unlinked.record.version,
+    calendarEvent.key,
+  );
+  assert.equal(stillLinked.status, "updated");
+  assert.deepEqual(listContactsForNote(sharedNote.key), [person.key]);
+  assert.deepEqual(listEventsForNote(sharedNote.key), [secondEvent.key]);
+  const removedLastEvent = unlinkNoteFromEvent(
+    sharedNote.key,
+    stillLinked.record.version,
+    secondEvent.key,
+  );
+  assert.equal(removedLastEvent.status, "updated");
+  assert.deepEqual(listEventsForNote(sharedNote.key), []);
+  const removedLastContact = unlinkNoteFromContact(
+    sharedNote.key,
+    removedLastEvent.record.version,
+    person.key,
+  );
+  assert.equal(removedLastContact.status, "updated");
+  assert.deepEqual(listContactsForNote(sharedNote.key), []);
+  const deletedSharedNote = deleteNote(
+    sharedNote.key,
+    removedLastContact.record.version,
+  );
+  assert.equal(deletedSharedNote.status, "deleted");
 
   assert.throws(
     () =>
@@ -377,7 +487,6 @@ test("notes require content while parent assignments are optional", () => {
         key: 7006,
         heading: " \t\n ",
         text: "Has a body",
-        contact_key: person.key,
       }),
     /heading must not be empty/,
   );
@@ -387,26 +496,24 @@ test("notes require content while parent assignments are optional", () => {
         key: 7007,
         heading: "Has a heading",
         text: " \t\n ",
-        event_key: calendarEvent.key,
       }),
     /text must not be empty/,
   );
+  const missingParentNote = insertNote({
+    key: 7009,
+    heading: "Missing event",
+    text: "Invalid reference",
+  });
   assert.throws(
-    () =>
-      insertNote({
-        key: 7009,
-        heading: "Missing event",
-        text: "Invalid reference",
-        event_key: -1,
-      }),
+    () => linkNoteToEvent(missingParentNote.key, missingParentNote.version, -1),
     { code: "SQLITE_CONSTRAINT_FOREIGNKEY" },
   );
   assert.throws(
     () =>
       db.prepare(
-        `INSERT INTO note ("key", "heading", "text", "event_key")
-         VALUES (?, ?, ?, ?)`,
-      ).run(7010, "Blank", " \t\n ", calendarEvent.key),
+        `INSERT INTO note ("key", "heading", "text")
+         VALUES (?, ?, ?)`,
+      ).run(7010, "Blank", " \t\n "),
     { code: "SQLITE_CONSTRAINT_CHECK" },
   );
   assert.doesNotThrow(() =>
@@ -424,9 +531,16 @@ test("notes use optimistic locking and survive deletion of linked parents", () =
     key: 7103,
     heading: "Keep this note",
     text: "The note outlives its linked records.",
-    event_key: calendarEvent.key,
-    contact_key: person.key,
   });
+  const contactLink = linkNoteToContact(note.key, note.version, person.key);
+  assert.equal(contactLink.status, "updated");
+  const eventLink = linkNoteToEvent(
+    note.key,
+    contactLink.record.version,
+    calendarEvent.key,
+  );
+  assert.equal(eventLink.status, "updated");
+  const linkedNote = eventLink.record;
 
   assert.deepEqual(deleteContact(person.key, person.version + 1), {
     status: "conflict",
@@ -435,15 +549,15 @@ test("notes use optimistic locking and survive deletion of linked parents", () =
   assert.equal(
     db.prepare('SELECT "version" FROM note WHERE "key" = ?').get(note.key)
       .version,
-    note.version,
+    linkedNote.version,
   );
 
-  const update = updateNote(note.key, note.version, {
+  const update = updateNote(note.key, linkedNote.version, {
     heading: "Updated heading",
   });
   assert.equal(update.status, "updated");
-  assert.equal(update.record.version, note.version + 1);
-  assert.deepEqual(updateNote(note.key, note.version, { text: "Stale edit" }), {
+  assert.equal(update.record.version, linkedNote.version + 1);
+  assert.deepEqual(updateNote(note.key, linkedNote.version, { text: "Stale edit" }), {
     status: "conflict",
     currentVersion: update.record.version,
   });
@@ -456,9 +570,9 @@ test("notes use optimistic locking and survive deletion of linked parents", () =
     .prepare('SELECT * FROM note WHERE "key" = ?')
     .get(note.key);
   assert.ok(afterContactDelete);
-  assert.equal(afterContactDelete.contact_key, null);
-  assert.equal(afterContactDelete.event_key, calendarEvent.key);
   assert.equal(afterContactDelete.version, update.record.version + 1);
+  assert.deepEqual(listContactsForNote(note.key), []);
+  assert.deepEqual(listEventsForNote(note.key), [calendarEvent.key]);
   assert.equal(countRows("event", "key", calendarEvent.key), 1);
 
   assert.equal(
@@ -469,8 +583,8 @@ test("notes use optimistic locking and survive deletion of linked parents", () =
     .prepare('SELECT * FROM note WHERE "key" = ?')
     .get(note.key);
   assert.ok(afterBothParentsDelete);
-  assert.equal(afterBothParentsDelete.contact_key, null);
-  assert.equal(afterBothParentsDelete.event_key, null);
+  assert.deepEqual(listContactsForNote(note.key), []);
+  assert.deepEqual(listEventsForNote(note.key), []);
   assert.equal(afterBothParentsDelete.version, afterContactDelete.version + 1);
 
   const orphanUpdate = updateNote(note.key, afterBothParentsDelete.version, {
@@ -489,4 +603,68 @@ test("notes use optimistic locking and survive deletion of linked parents", () =
   assert.deepEqual(deleteNote(note.key, orphanUpdate.record.version), {
     status: "not_found",
   });
+});
+
+test("note-link migration preserves existing note contents and assignments", () => {
+  const legacyDatabasePath = join(temporaryDirectory, "legacy-notes.db");
+  const legacyDatabase = new Database(legacyDatabasePath);
+  legacyDatabase.pragma("foreign_keys = ON");
+  legacyDatabase.exec(`
+    CREATE TABLE contact ("key" INTEGER PRIMARY KEY);
+    CREATE TABLE event ("key" INTEGER PRIMARY KEY);
+    INSERT INTO contact ("key") VALUES (1), (2);
+    INSERT INTO event ("key") VALUES (3), (4);
+  `);
+  legacyDatabase.exec(
+    readFileSync(
+      new URL("../database/migrations/003_add_notes.sql", import.meta.url),
+      "utf8",
+    ),
+  );
+  legacyDatabase
+    .prepare(
+      `INSERT INTO note ("key", "heading", "text", "event_key", "contact_key")
+       VALUES (?, ?, ?, ?, ?)`,
+    )
+    .run(5, "Preserved heading", "Preserved text", 3, 1);
+  legacyDatabase
+    .prepare(
+      `INSERT INTO note ("key", "heading", "text", "contact_key")
+       VALUES (?, ?, ?, ?)`,
+    )
+    .run(6, "Contact-only heading", "Contact-only text", 2);
+
+  legacyDatabase.exec(
+    readFileSync(
+      new URL("../database/migrations/004_normalize_note_links.sql", import.meta.url),
+      "utf8",
+    ),
+  );
+
+  assert.deepEqual(
+    legacyDatabase
+      .prepare('SELECT "key", "heading", "text" FROM note ORDER BY "key"')
+      .all(),
+    [
+      { key: 5, heading: "Preserved heading", text: "Preserved text" },
+      { key: 6, heading: "Contact-only heading", text: "Contact-only text" },
+    ],
+  );
+  assert.deepEqual(
+    legacyDatabase
+      .prepare('SELECT "note_key", "contact_key" FROM note_contacts ORDER BY "note_key"')
+      .all(),
+    [
+      { note_key: 5, contact_key: 1 },
+      { note_key: 6, contact_key: 2 },
+    ],
+  );
+  assert.deepEqual(
+    legacyDatabase
+      .prepare('SELECT "note_key", "event_key" FROM note_events ORDER BY "note_key"')
+      .all(),
+    [{ note_key: 5, event_key: 3 }],
+  );
+  assert.deepEqual(legacyDatabase.pragma("foreign_key_check"), []);
+  legacyDatabase.close();
 });

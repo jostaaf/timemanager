@@ -25,6 +25,7 @@ relationship, foreign-key, and index reference.
 | `src/server/db/event.ts` | CRUD statements for `event` |
 | `src/server/db/event-contacts.ts` | CRUD statements for `event_contacts` |
 | `src/server/db/note.ts` | CRUD statements and validation for `note` |
+| `src/server/db/note-links.ts` | Version-checked many-to-many note assignments |
 | `src/server/db/optimistic-update.ts` | Shared compare-and-update implementation |
 | `src/server/db/delete-parent.ts` | Parent deletion and linked-note version updates |
 | `src/server/db/contact-service.ts` | Atomic contact and social-record operations |
@@ -66,10 +67,18 @@ The database enforces these relationships:
   only to its `event_contacts` rows; it never deletes a contact. These
   link-only cascades are performed by SQLite as part of the parent delete.
 - A note must have nonblank heading and text. Its creation timestamp is
-  assigned by SQLite. Event and contact assignments are optional; a note may
-  exist independently or be linked to either or both. Deleting a linked parent
-  sets that note's corresponding foreign key to `NULL`, increments its version
-  in the application delete transaction, and preserves the note.
+  assigned by SQLite. A note may exist independently and can link to zero or
+  more contacts and zero or more events. Deleting a linked parent removes only
+  that relationship and increments the note version in the application delete
+  transaction; the note and its other links are preserved.
+
+Use `linkNoteToContact`, `unlinkNoteFromContact`, `linkNoteToEvent`, and
+`unlinkNoteFromEvent` from `note-links.ts` to change note assignments. Each
+operation requires the note's expected version and increments it if a link
+changes. They return `updated`, `unchanged`, `conflict`, or `not_found`. Duplicate
+links and removal of a nonexistent link return `unchanged`. Use
+`listContactsForNote` and `listEventsForNote` to read related keys, or
+`listNotesForContact` and `listNotesForEvent` to retrieve linked note records.
 
 Use the aggregate service functions when creating a parent together with its
 children:
@@ -99,13 +108,20 @@ npm run db:migrate:relationships
 The migration preserves existing `contact_socials` and adds cascading
 references to both parent tables. Back up the database before applying it.
 
-The notes migration adds the `note` table, its parent indexes, and foreign keys
-that use `ON DELETE SET NULL`; it does not alter or remove existing records.
-Notes may have neither parent assigned.
-Apply it with:
+Migration 003 adds the `note` table and its content checks. For an existing
+database being upgraded from before notes, apply it with:
 
 ```sh
 npm run db:migrate:notes
+npm run db:types
+```
+
+Migration 004 moves the former optional single `event_key` and `contact_key`
+values into the `note_events` and `note_contacts` join tables, preserving
+existing note assignments and note content. Apply it after migration 003:
+
+```sh
+npm run db:migrate:note-links
 npm run db:types
 ```
 
@@ -183,7 +199,7 @@ removed.
 
 The suite covers:
 
-- Insert, update, and delete for all four original tables, plus note CRUD.
+- Insert, update, and delete for every table, including note CRUD and note links.
 - Optimistic-lock version increments, stale-version conflicts, and missing
   records for update and delete.
 - Foreign-key rejection when a child references a missing parent.
@@ -192,8 +208,9 @@ The suite covers:
 - Parent deletion cascading only to relationship rows, while leaving the
   other parent record intact.
 - Contacts and events with no relationship rows.
-- Note creation, content validation, optional parent assignments, optimistic
-  locking, and note preservation after deleting one or both assigned parents.
+- Note creation, content validation, multiple contact/event links,
+  version-checked link changes, and note preservation after deleting linked
+  contacts or events.
 
 The test command does not modify user data in `database/timemanager.db`.
 It does regenerate `src/server/db/types.ts` and compile files under `dist/`.
@@ -245,10 +262,10 @@ other tables and does not allow changes to `created_at`.
 When the application deletes a contact or event, it increments versions of
 notes whose corresponding parent reference is cleared. This code runs in the
 same transaction as the parent delete. Notes remain editable even if both
-parents have since been deleted. Direct SQL parent deletion still preserves
-notes through `ON DELETE SET NULL`, but bypasses the application's version
-increment; perform deletes through the table modules to preserve optimistic
-locking behavior.
+parents have since been deleted. Direct SQL parent deletion also removes
+matching note-link rows through foreign-key cascades, but bypasses the
+application's note-version increments; perform deletes through the table
+modules to preserve optimistic-locking behavior.
 
 Example:
 

@@ -41,6 +41,7 @@ export function deleteEvent(
 ): OptimisticDeleteResult<EventRecord> {
   return deleteParentAndPreserveNotes<EventRecord>(
     "event",
+    "note_events",
     "event_key",
     key,
     expectedVersion,

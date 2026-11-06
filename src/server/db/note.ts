@@ -9,11 +9,8 @@ import type { NewNoteRecord, NoteRecord, NoteUpdate } from "./types.js";
 
 export type CreateNoteInput = Omit<
   NewNoteRecord,
-  "created_at" | "version" | "event_key" | "contact_key"
-> & {
-  event_key?: number | null;
-  contact_key?: number | null;
-};
+  "created_at" | "version"
+>;
 
 function assertNonBlank(value: string, field: "heading" | "text"): void {
   if (value.trim().length === 0) {
@@ -27,19 +24,17 @@ export function insertNote(input: CreateNoteInput): NoteRecord {
 
   const inserted = db
     .prepare<
-      Pick<NoteRecord, "key" | "heading" | "text" | "event_key" | "contact_key">,
+      Pick<NoteRecord, "key" | "heading" | "text">,
       NoteRecord
     >(
-      `INSERT INTO note ("key", "heading", "text", "event_key", "contact_key")
-       VALUES (@key, @heading, @text, @event_key, @contact_key)
+      `INSERT INTO note ("key", "heading", "text")
+       VALUES (@key, @heading, @text)
        RETURNING *`,
     )
     .get({
       key: input.key,
       heading: input.heading,
       text: input.text,
-      event_key: input.event_key ?? null,
-      contact_key: input.contact_key ?? null,
     });
   if (!inserted) {
     throw new Error("Inserting note did not return a record");

@@ -57,9 +57,23 @@ export interface NoteTable {
   'created_at': string;
   'heading': string;
   'text': string;
-  'event_key': number | null;
-  'contact_key': number | null;
 }
 export type NoteRecord = NoteTable;
 export type NewNoteRecord = Omit<NoteRecord, "version" | "created_at"> & Partial<Pick<NoteRecord, "version" | "created_at">>;
 export type NoteUpdate = Partial<Omit<NoteRecord, "key" | "version" | "created_at">>;
+
+export interface NoteContactsTable {
+  'note_key': number;
+  'contact_key': number;
+}
+export type NoteContactsRecord = NoteContactsTable;
+export type NewNoteContactsRecord = NoteContactsRecord;
+export type NoteContactsUpdate = Partial<Omit<NoteContactsRecord, "key" | "version">>;
+
+export interface NoteEventsTable {
+  'note_key': number;
+  'event_key': number;
+}
+export type NoteEventsRecord = NoteEventsTable;
+export type NewNoteEventsRecord = NoteEventsRecord;
+export type NoteEventsUpdate = Partial<Omit<NoteEventsRecord, "key" | "version">>;
