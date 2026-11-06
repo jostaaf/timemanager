@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DATABASE_PATH = ROOT / "database" / "timemanager.db"
+SCHEMA_PATH = ROOT / "database" / "schema.sql"
 OUTPUT_PATH = ROOT / "src" / "server" / "db" / "types.ts"
 
 
@@ -33,11 +33,12 @@ def typescript_type(declared_type: str) -> str:
 
 
 def main() -> None:
-    if not DATABASE_PATH.is_file():
-        raise FileNotFoundError(f"SQLite database not found: {DATABASE_PATH}")
+    if not SCHEMA_PATH.is_file():
+        raise FileNotFoundError(f"SQLite schema baseline not found: {SCHEMA_PATH}")
 
-    connection = sqlite3.connect(f"file:{DATABASE_PATH}?mode=ro", uri=True)
+    connection = sqlite3.connect(":memory:")
     try:
+        connection.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
         tables = [
             row[0]
             for row in connection.execute(
@@ -50,7 +51,7 @@ def main() -> None:
             )
         ]
         if not tables:
-            raise ValueError(f"No application tables found in {DATABASE_PATH}")
+            raise ValueError(f"No application tables found in {SCHEMA_PATH}")
 
         used_type_names: set[str] = set()
         definitions = [

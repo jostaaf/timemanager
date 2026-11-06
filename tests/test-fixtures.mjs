@@ -3,36 +3,17 @@ import { after } from "node:test";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import Database from "better-sqlite3";
 
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "timemanager-db-tests-"));
 const testDatabasePath = join(temporaryDirectory, "test.db");
-const sourceDatabasePath = fileURLToPath(
-  new URL("../database/timemanager.db", import.meta.url),
+const schema = readFileSync(
+  new URL("../database/schema.sql", import.meta.url),
+  "utf8",
 );
-
-const sourceDatabase = new Database(sourceDatabasePath, {
-  readonly: true,
-  fileMustExist: true,
-});
-const schema = sourceDatabase
-  .prepare(
-    `SELECT sql
-     FROM sqlite_master
-     WHERE type IN ('table', 'index', 'trigger')
-       AND sql IS NOT NULL
-       AND name NOT LIKE 'sqlite_%'
-     ORDER BY CASE type WHEN 'table' THEN 0 WHEN 'index' THEN 1 ELSE 2 END, name`,
-  )
-  .all();
-sourceDatabase.close();
-
 const schemaDatabase = new Database(testDatabasePath);
-for (const { sql } of schema) {
-  schemaDatabase.exec(sql);
-}
 schemaDatabase.pragma("foreign_keys = ON");
+schemaDatabase.exec(schema);
 assert.deepEqual(schemaDatabase.pragma("foreign_key_check"), []);
 schemaDatabase.close();
 
@@ -218,5 +199,4 @@ export {
   linkNoteToEvent, unlinkNoteFromEvent, listEventsForNote,
   listNotesForContact, listNotesForEvent,
   insertNote, contact, social, event, eventContact, countRows,
-  Database, readFileSync, join, temporaryDirectory,
 };

@@ -205,7 +205,7 @@ join rows in the same application transaction.
 
 ## Schema changes
 
-The database file is the current schema source of truth. SQL migrations are
-stored in `database/migrations/`; generated TypeScript records are refreshed
-with `npm run db:types`. See the [SQLite server data layer documentation](./database-layer.md)
-for the migration and type-generation workflow.
+`database/schema.sql` is the canonical current schema and is used to initialize
+fresh databases and generate TypeScript record types with `npm run db:types`.
+There is currently no migration history or runner. See the [SQLite server data
+layer documentation](./database-layer.md) for the schema-change workflow.

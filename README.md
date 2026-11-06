@@ -17,9 +17,14 @@ Install Node.js and npm, then run:
 
 ```sh
 npm install
+npm run db:init
 npm run check
 npm test
 ```
+
+`npm run db:init` creates `database/timemanager.db` from the canonical
+`database/schema.sql` baseline. It refuses to modify a database with a
+mismatching schema.
 
 `npm run check` regenerates database types and type-checks the project.
 `npm test` builds the code and runs database-layer tests against a temporary
@@ -39,26 +44,5 @@ To regenerate database types explicitly:
 npm run db:types
 ```
 
-After backing up the database, add the notes table with:
-
-```sh
-npm run db:migrate:notes
-npm run db:types
-```
-
-To migrate note assignments to many-to-many links:
-
-```sh
-npm run db:migrate:note-links
-npm run db:types
-```
-
-To normalize existing note creation timestamps to UTC ISO-8601 text:
-
-```sh
-npm run db:migrate:note-timestamps
-npm run db:types
-```
-
-See the database-layer documentation for setup details and the recommended
-workflow when changing the SQLite schema.
+See the database-layer documentation for the schema baseline and workflow for
+future schema changes.

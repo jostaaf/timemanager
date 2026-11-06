@@ -5,7 +5,7 @@ const databasePath =
   process.env.TIMEMANAGER_DB_PATH ??
   fileURLToPath(new URL("../../../database/timemanager.db", import.meta.url));
 
-export const db = new Database(databasePath);
+export const db = new Database(databasePath, { fileMustExist: true });
 db.pragma("foreign_keys = ON");
 
 export function runInImmediateTransaction<T>(operation: () => T): T {

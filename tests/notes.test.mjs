@@ -4,7 +4,6 @@ import {
   contact,
   countRows,
   createNoteApplication,
-  Database,
   db,
   deleteContact,
   deleteEvent,
@@ -14,7 +13,6 @@ import {
   insertContact,
   insertEvent,
   insertNote,
-  join,
   linkNoteToContact,
   linkNoteToEvent,
   listAllNotes,
@@ -27,9 +25,7 @@ import {
   listNotesForEvent,
   listNotesForEventKey,
   listUnassignedNotes,
-  readFileSync,
   searchNotes,
-  temporaryDirectory,
   unlinkNoteFromContact,
   unlinkNoteFromEvent,
   updateNote,
@@ -611,121 +607,4 @@ test("application note listings cover text, date, and assignment filters", () =>
       ),
     /Note range end must be later/,
   );
-});
-
-
-test("note-link migration preserves existing note contents and assignments", () => {
-  const legacyDatabasePath = join(temporaryDirectory, "legacy-notes.db");
-  const legacyDatabase = new Database(legacyDatabasePath);
-  legacyDatabase.pragma("foreign_keys = ON");
-  legacyDatabase.exec(`
-    CREATE TABLE contact ("key" INTEGER PRIMARY KEY);
-    CREATE TABLE event ("key" INTEGER PRIMARY KEY);
-    INSERT INTO contact ("key") VALUES (1), (2);
-    INSERT INTO event ("key") VALUES (3), (4);
-  `);
-  legacyDatabase.exec(
-    readFileSync(
-      new URL("../database/migrations/003_add_notes.sql", import.meta.url),
-      "utf8",
-    ),
-  );
-  legacyDatabase
-    .prepare(
-      `INSERT INTO note ("key", "heading", "text", "event_key", "contact_key")
-       VALUES (?, ?, ?, ?, ?)`,
-    )
-    .run(5, "Preserved heading", "Preserved text", 3, 1);
-  legacyDatabase
-    .prepare(
-      `INSERT INTO note ("key", "heading", "text", "contact_key")
-       VALUES (?, ?, ?, ?)`,
-    )
-    .run(6, "Contact-only heading", "Contact-only text", 2);
-
-  legacyDatabase.exec(
-    readFileSync(
-      new URL("../database/migrations/004_normalize_note_links.sql", import.meta.url),
-      "utf8",
-    ),
-  );
-
-  assert.deepEqual(
-    legacyDatabase
-      .prepare('SELECT "key", "heading", "text" FROM note ORDER BY "key"')
-      .all(),
-    [
-      { key: 5, heading: "Preserved heading", text: "Preserved text" },
-      { key: 6, heading: "Contact-only heading", text: "Contact-only text" },
-    ],
-  );
-  assert.deepEqual(
-    legacyDatabase
-      .prepare('SELECT "note_key", "contact_key" FROM note_contacts ORDER BY "note_key"')
-      .all(),
-    [
-      { note_key: 5, contact_key: 1 },
-      { note_key: 6, contact_key: 2 },
-    ],
-  );
-  assert.deepEqual(
-    legacyDatabase
-      .prepare('SELECT "note_key", "event_key" FROM note_events ORDER BY "note_key"')
-      .all(),
-    [{ note_key: 5, event_key: 3 }],
-  );
-
-  const legacyTimestamps = legacyDatabase
-    .prepare('SELECT "key", "created_at" FROM note ORDER BY "key"')
-    .all();
-  legacyDatabase.pragma("foreign_keys = OFF");
-  legacyDatabase.exec(
-    readFileSync(
-      new URL(
-        "../database/migrations/005_note_created_at_iso8601.sql",
-        import.meta.url,
-      ),
-      "utf8",
-    ),
-  );
-  legacyDatabase.pragma("foreign_keys = ON");
-
-  const migratedTimestamps = legacyDatabase
-    .prepare('SELECT "key", "created_at" FROM note ORDER BY "key"')
-    .all();
-  assert.deepEqual(
-    migratedTimestamps.map((row) => row.key),
-    legacyTimestamps.map((row) => row.key),
-  );
-  assert.deepEqual(
-    migratedTimestamps.map((row) => row.created_at),
-    legacyTimestamps.map((row) => `${row.created_at.replace(" ", "T")}.000Z`),
-  );
-  assert.ok(
-    migratedTimestamps.every((row) =>
-      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(
-        row.created_at,
-      ),
-    ),
-  );
-  assert.equal(
-    legacyDatabase
-      .pragma("table_info('note')")
-      .find((column) => column.name === "created_at").dflt_value,
-    null,
-  );
-  assert.equal(
-    legacyDatabase
-      .prepare("SELECT count(*) AS count FROM note_contacts")
-      .get().count,
-    2,
-  );
-  assert.equal(
-    legacyDatabase
-      .prepare("SELECT count(*) AS count FROM note_events")
-      .get().count,
-    1,
-  );
-  assert.deepEqual(legacyDatabase.pragma("foreign_key_check"), []);
-  legacyDatabase.close();
 });
