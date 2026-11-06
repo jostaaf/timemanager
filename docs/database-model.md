@@ -20,7 +20,8 @@ event    0..* ───── 0..* note_events   0..* ───── 1 note
 - An event and a contact are independent entities. Either may exist without
   any event/contact relationship.
 - `event_contacts` implements the many-to-many relationship: each row connects
-  one event to one contact, and each event/contact can be linked to many rows.
+  one event to one contact. A contact may be linked to a given event at most
+  once.
 - Notes may be standalone or link to zero or more contacts and zero or more
   events. The links are represented by `note_contacts` and `note_events`.
 - Deleting a contact or event removes only its rows from the respective note
@@ -28,8 +29,9 @@ event    0..* ───── 0..* note_events   0..* ───── 1 note
 - Deleting a contact deletes its social profiles and its event-contact links,
   but not events. Deleting an event deletes its event-contact links, but not
   contacts.
-- The schema does not currently enforce uniqueness of a contact/event pair;
-  the same contact can be linked to the same event more than once.
+- The database schema does not enforce the one-link-per-event/contact rule.
+  Application-level enforcement is not implemented yet, so duplicate pairs
+  can currently be inserted.
 
 ## Tables
 
@@ -181,19 +183,23 @@ other; only matching child/join rows are removed.
 | `ix_note_contacts_contact_key` | `note_contacts` | `contact_key` ascending | Find notes assigned to a contact; support contact deletion |
 | `ix_note_events_event_key` | `note_events` | `event_key` ascending | Find notes assigned to an event; support event deletion |
 
-SQLite creates the primary-key indexes implicitly. The join-table composite
-primary keys ensure a note cannot have the same contact or event linked more
-than once.
+SQLite creates the primary-key indexes implicitly. The composite primary keys
+on `note_contacts` and `note_events` prevent duplicate note assignments.
+`event_contacts` has only its surrogate `key` as a primary key; enforcing one
+link per event/contact pair still requires application code.
 
 ## Versioning
 
-Every table has a non-null integer `version`. The server update layer compares
-the caller's expected version and increments the stored value on a successful
-update. Deletes also require a matching expected version. `event_contacts`
-and `note` default their version to `1`; inserts through the typed APIs use
-those database defaults. Link and unlink operations increment the note version.
-Deleting a contact or event also increments the version of each linked note
-while removing the join rows in the same application transaction.
+Every entity and versioned relationship table (`contact`, `contact_socials`,
+`event`, `event_contacts`, and `note`) has a non-null integer `version`. The
+server update layer compares the caller's expected version and increments the
+stored value on a successful update. Deletes also require a matching expected
+version. `event_contacts` and `note` default their version to `1`; inserts
+through the typed APIs use those database defaults. The note-assignment join
+tables (`note_contacts` and `note_events`) have no independent version; link
+and unlink operations increment the owning note's version. Deleting a contact
+or event also increments the version of each linked note while removing the
+join rows in the same application transaction.
 
 ## Schema changes
 
