@@ -110,6 +110,16 @@ Database foreign keys continue to protect referential integrity.
 
 Note use cases are in `notes/`:
 
+- `listAllNotes` returns all notes newest first.
+- `searchNotes` searches heading or body text with a case-insensitive,
+  literal substring match.
+- `listNotesCreatedInRange(fromInclusive, toExclusive)` selects notes in a
+  half-open range using canonical UTC ISO-8601 timestamps.
+- `listUnassignedNotes` returns notes with neither contact nor event links.
+- `listNotesForContactKey` and `listNotesForEventKey` return assigned notes,
+  newest first.
+- `listNotesForContactAndEvent` returns notes linked to both the specified
+  contact and event.
 - `createNote` creates a standalone note or creates it with optional contact
   and event assignments. It checks parent existence and duplicate keys before
   inserting, generates `created_at` in application code as a UTC ISO-8601

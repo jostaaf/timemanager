@@ -156,7 +156,7 @@ export function listNotesForContact(contactKey: number): NoteRecord[] {
        FROM note
        JOIN note_contacts ON note_contacts."note_key" = note."key"
        WHERE note_contacts."contact_key" = ?
-       ORDER BY note."key"`,
+       ORDER BY note."created_at" DESC, note."key" DESC`,
     )
     .all(contactKey);
 }
@@ -168,7 +168,7 @@ export function listNotesForEvent(eventKey: number): NoteRecord[] {
        FROM note
        JOIN note_events ON note_events."note_key" = note."key"
        WHERE note_events."event_key" = ?
-       ORDER BY note."key"`,
+       ORDER BY note."created_at" DESC, note."key" DESC`,
     )
     .all(eventKey);
 }

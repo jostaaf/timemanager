@@ -106,6 +106,15 @@ const { updateNoteWithAssignments } = await import(
 const { deleteNoteWithAssignments } = await import(
   "../dist/server/application/notes/delete-note.js"
 );
+const {
+  listAllNotes,
+  searchNotes,
+  listNotesCreatedInRange,
+  listUnassignedNotes,
+  listNotesForContactKey,
+  listNotesForEventKey,
+  listNotesForContactAndEvent,
+} = await import("../dist/server/application/notes/list-notes.js");
 const { insertNote: insertNoteRecord, updateNote, deleteNote } = await import(
   "../dist/server/db/note.js"
 );
@@ -1002,7 +1011,7 @@ test("notes require content while parent assignments are optional", () => {
   );
   assert.deepEqual(
     listNotesForEvent(calendarEvent.key).map((note) => note.key),
-    [eventNote.key, sharedNote.key],
+    [sharedNote.key, eventNote.key],
   );
   assert.deepEqual(
     linkNoteToContact(-1, 1, person.key),
@@ -1319,6 +1328,152 @@ test("application deletes notes without deleting assigned parents", () => {
   assert.equal(countRows("note_events", "note_key", 7403), 0);
   assert.equal(countRows("contact", "key", person.key), 1);
   assert.equal(countRows("event", "key", calendarEvent.key), 1);
+});
+
+test("application note listings cover text, date, and assignment filters", () => {
+  const firstContact = insertContact(contact(7501));
+  const secondContact = insertContact(contact(7502));
+  const firstEvent = insertEvent(event(7503));
+  const secondEvent = insertEvent(event(7504));
+
+  const oldStandalone = insertNote({
+    key: 7505,
+    created_at: "2026-01-01T10:00:00.000Z",
+    heading: "Old standalone",
+    text: "An older note.",
+  });
+  const shared = insertNote({
+    key: 7506,
+    created_at: "2026-01-02T10:00:00.000Z",
+    heading: "Project plan",
+    text: "Discuss schedule.",
+  });
+  const contactOnly = insertNote({
+    key: 7507,
+    created_at: "2026-01-03T10:00:00.000Z",
+    heading: "Contact update",
+    text: "Call tomorrow.",
+  });
+  const eventOnly = insertNote({
+    key: 7508,
+    created_at: "2026-01-04T10:00:00.000Z",
+    heading: "Event agenda",
+    text: "Project review.",
+  });
+  const anotherContactEvent = insertNote({
+    key: 7509,
+    created_at: "2026-01-05T10:00:00.000Z",
+    heading: "Other pair",
+    text: "For another event.",
+  });
+
+  const sharedContactLink = linkNoteToContact(
+    shared.key,
+    shared.version,
+    firstContact.key,
+  );
+  assert.equal(sharedContactLink.status, "updated");
+  assert.equal(
+    linkNoteToEvent(
+      shared.key,
+      sharedContactLink.record.version,
+      firstEvent.key,
+    ).status,
+    "updated",
+  );
+  assert.equal(
+    linkNoteToContact(contactOnly.key, contactOnly.version, firstContact.key)
+      .status,
+    "updated",
+  );
+  assert.equal(
+    linkNoteToEvent(eventOnly.key, eventOnly.version, firstEvent.key).status,
+    "updated",
+  );
+  const otherContactLink = linkNoteToContact(
+    anotherContactEvent.key,
+    anotherContactEvent.version,
+    firstContact.key,
+  );
+  assert.equal(otherContactLink.status, "updated");
+  const otherEventLink = linkNoteToEvent(
+    anotherContactEvent.key,
+    otherContactLink.record.version,
+    secondEvent.key,
+  );
+  assert.equal(otherEventLink.status, "updated");
+  assert.equal(
+    linkNoteToContact(
+      anotherContactEvent.key,
+      otherEventLink.record.version,
+      secondContact.key,
+    ).status,
+    "updated",
+  );
+
+  assert.deepEqual(
+    listAllNotes()
+      .filter((note) => note.key >= 7505 && note.key <= 7509)
+      .map((note) => note.key),
+    [7509, 7508, 7507, 7506, 7505],
+  );
+  assert.deepEqual(
+    searchNotes("PROJECT")
+      .filter((note) => note.key >= 7505 && note.key <= 7509)
+      .map((note) => note.key),
+    [7508, 7506],
+  );
+  assert.deepEqual(
+    searchNotes("%").filter((note) => note.key >= 7505 && note.key <= 7509),
+    [],
+  );
+  assert.deepEqual(searchNotes("  "), []);
+  assert.deepEqual(
+    listNotesCreatedInRange(
+      "2026-01-02T10:00:00.000Z",
+      "2026-01-04T10:00:00.000Z",
+    ).map((note) => note.key),
+    [7507, 7506],
+  );
+  assert.deepEqual(
+    listUnassignedNotes()
+      .filter((note) => note.key >= 7505 && note.key <= 7509)
+      .map((note) => note.key),
+    [7505],
+  );
+  assert.deepEqual(
+    listNotesForContactKey(firstContact.key)
+      .filter((note) => note.key >= 7505 && note.key <= 7509)
+      .map((note) => note.key),
+    [7509, 7507, 7506],
+  );
+  assert.deepEqual(
+    listNotesForEventKey(firstEvent.key)
+      .filter((note) => note.key >= 7505 && note.key <= 7509)
+      .map((note) => note.key),
+    [7508, 7506],
+  );
+  assert.deepEqual(
+    listNotesForContactAndEvent(firstContact.key, firstEvent.key).map(
+      (note) => note.key,
+    ),
+    [7506],
+  );
+  assert.deepEqual(
+    listNotesForContactAndEvent(secondContact.key, secondEvent.key).map(
+      (note) => note.key,
+    ),
+    [7509],
+  );
+
+  assert.throws(
+    () =>
+      listNotesCreatedInRange(
+        "2026-01-04T10:00:00.000Z",
+        "2026-01-01T10:00:00.000Z",
+      ),
+    /Note range end must be later/,
+  );
 });
 
 test("note-link migration preserves existing note contents and assignments", () => {
