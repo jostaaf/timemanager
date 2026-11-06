@@ -76,6 +76,9 @@ const { deleteContactWithSocials } = await import(
 const { listContactsMatching } = await import(
   "../dist/server/application/contacts/list-contacts.js"
 );
+const { listContactsWithSocials } = await import(
+  "../dist/server/application/contacts/list-contacts-with-socials.js"
+);
 const { listContactsBySocialMedia } = await import(
   "../dist/server/application/contacts/list-contacts-by-social-media.js"
 );
@@ -559,6 +562,122 @@ test("application lists contacts by social media platform without duplicates", (
   );
   assert.deepEqual(listContactsBySocialMedia("LinkedIn"), []);
   assert.throws(() => listContactsBySocialMedia("   "), /must not be empty/);
+});
+
+test("contact listing combines social filters, includes all socials, and paginates", () => {
+  insertContact({
+    ...contact(3951),
+    name: "Alpha",
+    city: "North",
+    phone: "555-0101",
+    email: "alpha@example.com",
+    tag: "friend",
+  });
+  insertContact({
+    ...contact(3952),
+    name: "Beta",
+    city: "North",
+    phone: "555-0102",
+    email: "beta@example.com",
+    tag: "work",
+  });
+  insertContact({
+    ...contact(3953),
+    name: "Gamma",
+    city: "South",
+    phone: "555-0103",
+    email: "gamma@example.com",
+    tag: "friend",
+  });
+  insertContactSocial({
+    ...social(3954, 3951),
+    media: "Instagram",
+    userid: "alpha_handle",
+  });
+  insertContactSocial({
+    ...social(3955, 3951),
+    media: "Mastodon",
+    userid: "alpha@social.example",
+  });
+  insertContactSocial({
+    ...social(3956, 3952),
+    media: "Instagram",
+    userid: "beta_handle",
+  });
+  insertContactSocial({
+    ...social(3957, 3953),
+    media: "Mastodon",
+    userid: "gamma",
+  });
+
+  assert.deepEqual(
+    listContactsMatching({
+      city: "north",
+      socialMedia: "INSTAGRAM",
+      socialUserId: "handle",
+    }).map((record) => record.key),
+    [3951, 3952],
+  );
+  assert.deepEqual(
+    listContactsMatching({ socialUserId: "SOCIAL.EXAMPLE" }).map(
+      (record) => record.key,
+    ),
+    [3951],
+  );
+  assert.deepEqual(
+    listContactsMatching({ phone: "0102" }).map((record) => record.key),
+    [3952],
+  );
+  assert.deepEqual(
+    listContactsMatching({ email: "GAMMA@" }).map((record) => record.key),
+    [3953],
+  );
+  assert.deepEqual(
+    listContactsMatching({ tag: "friend" }).map((record) => record.key),
+    [3951, 3953],
+  );
+
+  const withSocials = listContactsWithSocials(
+    { socialMedia: "instagram", city: "north" },
+    { sortBy: "name", sortDirection: "desc", limit: 1 },
+  );
+  assert.deepEqual(
+    withSocials.map(({ contact: record, socials }) => [
+      record.key,
+      socials.map(({ media }) => media),
+    ]),
+    [[3952, ["Instagram"]]],
+  );
+  assert.deepEqual(
+    listContactsWithSocials({ name: "alpha" })[0].socials.map(
+      ({ media }) => media,
+    ),
+    ["Instagram", "Mastodon"],
+  );
+
+  assert.deepEqual(
+    listContactsMatching({}, { sortBy: "city", sortDirection: "desc" })
+      .filter((record) => record.key >= 3951 && record.key <= 3953)
+      .map((record) => record.key),
+    [3953, 3951, 3952],
+  );
+  const allByName = listContactsMatching({}, { sortBy: "name" }).map(
+    (record) => record.key,
+  );
+  assert.deepEqual(
+    listContactsMatching({}, { sortBy: "name", limit: 2, offset: 1 }).map(
+      (record) => record.key,
+    ),
+    allByName.slice(1, 3),
+  );
+  assert.throws(
+    () => listContactsMatching({}, { limit: -1 }),
+    /limit must be a non-negative integer/,
+  );
+  assert.throws(
+    () => listContactsMatching({}, { offset: 1.5 }),
+    /offset must be a non-negative integer/,
+  );
 });
 
 test("event aggregate inserts atomically and rolls back on invalid contact", () => {

@@ -54,13 +54,21 @@ application-provided key model.
 Contact aggregate use cases are in `contacts/`:
 
 - `listContactsMatching` lists all contacts or filters by any combination of
-  name, street address, postcode, and city. Non-empty criteria use
-  case-insensitive substring matching and are combined with AND. `%`, `_`,
-  and `!` in a search value are treated literally.
+  name, street address, postcode, city, phone, email, tag, social platform,
+  and/or social user ID. Non-empty text criteria use case-insensitive
+  substring matching and are combined with AND. Social platform matching is
+  exact and case-insensitive. `%`, `_`, and `!` in search values are treated
+  literally.
+- Contact listings accept optional `sortBy`, `sortDirection`, `limit`, and
+  `offset` options. Sorting is allowlisted and uses the contact key as a
+  stable tie-breaker. Pagination values must be non-negative integers.
 - `listContactsBySocialMedia("Instagram")` returns each contact with at least
   one matching social-media record. Platform matching ignores case and
   surrounding whitespace; contacts with multiple matching accounts appear
   only once.
+- `listContactsWithSocials(criteria, options)` returns `{ contact, socials }`
+  for each matching contact. The socials list includes all of that contact's
+  social records, even when the criteria matched only one platform.
 - `createContactWithSocials` creates a contact and its supplied social records
   atomically. Social records are assigned to the new contact by the use case.
 - `updateContactWithSocials` updates contact fields and applies a batch of
