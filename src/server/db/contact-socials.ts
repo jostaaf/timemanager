@@ -30,6 +30,24 @@ export function insertContactSocial(
   return inserted;
 }
 
+export function insertContactSocialWithGeneratedKey(
+  record: Omit<ContactSocialsRecord, "key" | "version">,
+): ContactSocialsRecord {
+  const inserted = db
+    .prepare<Omit<ContactSocialsRecord, "key" | "version">, ContactSocialsRecord>(
+      `INSERT INTO contact_socials
+        ("version", "contact_key", "media", "userid", "comment")
+       VALUES
+        (1, @contact_key, @media, @userid, @comment)
+       RETURNING *`,
+    )
+    .get(record);
+  if (!inserted) {
+    throw new Error("Inserting contact social did not return a record");
+  }
+  return inserted;
+}
+
 export function getContactSocialByKey(
   key: number,
 ): ContactSocialsRecord | undefined {

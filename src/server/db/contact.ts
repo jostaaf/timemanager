@@ -68,6 +68,24 @@ export function insertContact(
   return inserted;
 }
 
+export function insertContactWithGeneratedKey(
+  record: Omit<ContactRecord, "key" | "version">,
+): ContactRecord {
+  const inserted = db
+    .prepare<Omit<ContactRecord, "key" | "version">, ContactRecord>(
+      `INSERT INTO contact
+        ("version", "name", "street", "zip", "city", "phone", "email", "tag", "comment")
+       VALUES
+        (1, @name, @street, @zip, @city, @phone, @email, @tag, @comment)
+       RETURNING *`,
+    )
+    .get(record);
+  if (!inserted) {
+    throw new Error("Inserting contact did not return a record");
+  }
+  return inserted;
+}
+
 export function getContactByKey(key: number): ContactRecord | undefined {
   return db
     .prepare<[number], ContactRecord>('SELECT * FROM contact WHERE "key" = ?')

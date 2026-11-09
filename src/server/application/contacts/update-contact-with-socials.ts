@@ -5,6 +5,7 @@ import {
   getContactSocialByKey,
   getContactSocialsForContact,
   insertContactSocial,
+  insertContactSocialWithGeneratedKey,
   updateContactSocial,
 } from "../../db/contact-socials.js";
 import type {
@@ -18,8 +19,10 @@ import type { NewContactSocial } from "../../db/contact-service.js";
 export type ContactSocialChange =
   | {
       type: "add";
-      key: number;
-      record: Omit<NewContactSocial, "key">;
+      key?: number;
+      record: Omit<NewContactSocial, "key" | "version"> & {
+        version?: number;
+      };
     }
   | {
       type: "update";
@@ -95,11 +98,19 @@ export function updateContactWithSocials(
 
     for (const change of input.socialChanges) {
       if (change.type === "add") {
-        insertContactSocial({
-          ...change.record,
-          key: change.key,
-          contact_key: input.contactKey,
-        });
+        if (change.key === undefined) {
+          insertContactSocialWithGeneratedKey({
+            ...change.record,
+            contact_key: input.contactKey,
+          });
+        } else {
+          insertContactSocial({
+            ...change.record,
+            key: change.key,
+            version: change.record.version ?? 1,
+            contact_key: input.contactKey,
+          });
+        }
       } else if (change.type === "update") {
         const result = updateContactSocial(
           change.key,

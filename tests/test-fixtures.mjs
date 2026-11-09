@@ -63,6 +63,7 @@ const { listContactsWithSocials } = await import(
 const { listContactsBySocialMedia } = await import(
   "../dist/server/application/contacts/list-contacts-by-social-media.js"
 );
+const { startApiServer } = await import("../dist/server/http/server.js");
 const { createEventWithContacts: createEventApplication } = await import(
   "../dist/server/application/events/create-event-with-contacts.js"
 );
@@ -188,6 +189,7 @@ export {
   createContactWithSocials, createEventWithContacts, addContactToEvent,
   createContactApplication, updateContactWithSocials, deleteContactWithSocials,
   listContactsMatching, listContactsWithSocials, listContactsBySocialMedia,
+  startApiServer,
   createEventApplication, updateEventWithContacts, deleteEventWithContacts,
   listAllEvents, listEventsInRange, listUpcomingEvents, searchEventsByName,
   listEventsForContact, listEventsWithContacts, listEventsWithoutContacts,

@@ -1,0 +1,453 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-09 16:16+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: src/client/main.js:25
+msgid "Name"
+msgstr ""
+
+#: src/client/main.js:26
+msgid "Street"
+msgstr ""
+
+#: src/client/main.js:27
+msgid "Postcode"
+msgstr ""
+
+#: src/client/main.js:28
+msgid "City"
+msgstr ""
+
+#: src/client/main.js:29
+msgid "Phone"
+msgstr ""
+
+#: src/client/main.js:30
+msgid "Email"
+msgstr ""
+
+#: src/client/main.js:31
+msgid "Tag"
+msgstr ""
+
+#: src/client/main.js:32 src/client/main.js:518
+msgid "Comment"
+msgstr ""
+
+#: src/client/main.js:42
+msgid "Local contacts client started."
+msgstr ""
+
+#: src/client/main.js:46
+msgid "Time Manager"
+msgstr ""
+
+#: src/client/main.js:51
+msgid "Client window closed."
+msgstr ""
+
+#: src/client/main.js:61
+#, javascript-format
+msgid "Local API stopped unexpectedly: %s"
+msgstr ""
+
+#: src/client/main.js:89
+msgid "Search contacts"
+msgstr ""
+
+#: src/client/main.js:100
+msgid "Starting local service"
+msgstr ""
+
+#: src/client/main.js:101
+msgid "Connecting to your contacts database..."
+msgstr ""
+
+#: src/client/main.js:105
+msgid "No contacts found"
+msgstr ""
+
+#: src/client/main.js:106
+msgid "Try another search or add your first contact."
+msgstr ""
+
+#: src/client/main.js:110
+msgid "Couldn't load contacts"
+msgstr ""
+
+#: src/client/main.js:111
+msgid "Check the local service and try again."
+msgstr ""
+
+#: src/client/main.js:131
+msgid "Contacts"
+msgstr ""
+
+#: src/client/main.js:134
+msgid "Refresh contacts"
+msgstr ""
+
+#: src/client/main.js:143
+msgid "New"
+msgstr ""
+
+#: src/client/main.js:164
+msgid "Show Log"
+msgstr ""
+
+#: src/client/main.js:174
+msgid "Application menu"
+msgstr ""
+
+#: src/client/main.js:197
+msgid "Diagnostic log opened."
+msgstr ""
+
+#: src/client/main.js:225 src/client/main.js:241
+msgid "Diagnostic Log"
+msgstr ""
+
+#: src/client/main.js:227
+msgid "Clear Log"
+msgstr ""
+
+#: src/client/main.js:230
+msgid "Log cleared."
+msgstr ""
+
+#: src/client/main.js:233 src/client/main.js:761
+msgid "Close"
+msgstr ""
+
+#: src/client/main.js:275
+msgid "Starting local API."
+msgstr ""
+
+#: src/client/main.js:278
+#, javascript-format
+msgid "Local API ready at %s."
+msgstr ""
+
+#: src/client/main.js:282
+#, javascript-format
+msgid "Local API startup failed: %s"
+msgstr ""
+
+#: src/client/main.js:299
+msgid "Loading contacts."
+msgstr ""
+
+#: src/client/main.js:307
+#, javascript-format
+msgid "%d contact loaded."
+msgid_plural "%d contacts loaded."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/client/main.js:311
+#, javascript-format
+msgid "Loading contacts failed: %s"
+msgstr ""
+
+#: src/client/main.js:332
+#, javascript-format
+msgid "%d social account"
+msgid_plural "%d social accounts"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/client/main.js:352
+msgid "Contact"
+msgstr ""
+
+#: src/client/main.js:354
+msgid "Loading contact"
+msgstr ""
+
+#: src/client/main.js:355
+msgid "Retrieving contact details..."
+msgstr ""
+
+#: src/client/main.js:366
+#, javascript-format
+msgid "Contact details loaded (key %d)."
+msgstr ""
+
+#: src/client/main.js:373
+#, javascript-format
+msgid "Loading contact details failed: %s"
+msgstr ""
+
+#: src/client/main.js:390 src/client/main.js:490
+msgid "Contact details"
+msgstr ""
+
+#: src/client/main.js:398 src/client/main.js:504
+msgid "Social accounts"
+msgstr ""
+
+#: src/client/main.js:416
+msgid "Edit"
+msgstr ""
+
+#: src/client/main.js:418
+#, javascript-format
+msgid "Opening editor for contact key %d."
+msgstr ""
+
+#: src/client/main.js:428
+msgid "Delete contact"
+msgstr ""
+
+#: src/client/main.js:454 src/client/main.js:461
+msgid "Edit contact"
+msgstr ""
+
+#: src/client/main.js:454 src/client/main.js:461
+msgid "New contact"
+msgstr ""
+
+#: src/client/main.js:464 src/client/main.js:737
+msgid "Cancel"
+msgstr ""
+
+#: src/client/main.js:467 src/client/main.js:585
+msgid "Save"
+msgstr ""
+
+#: src/client/main.js:495 src/client/main.js:515
+msgid "required"
+msgstr ""
+
+#: src/client/main.js:510 src/client/main.js:526
+msgid "New social account"
+msgstr ""
+
+#: src/client/main.js:515
+msgid "Platform"
+msgstr ""
+
+#: src/client/main.js:517
+msgid "User ID"
+msgstr ""
+
+#: src/client/main.js:533
+msgid "Remove social account"
+msgstr ""
+
+#: src/client/main.js:546
+msgid "Add social account"
+msgstr ""
+
+#: src/client/main.js:564
+#, javascript-format
+msgid "Save clicked for %s contact."
+msgstr ""
+
+#: src/client/main.js:566
+msgid "existing"
+msgstr ""
+
+#: src/client/main.js:566
+msgid "new"
+msgstr ""
+
+#: src/client/main.js:570
+msgid "Saving..."
+msgstr ""
+
+#: src/client/main.js:581
+#, javascript-format
+msgid "Contact save failed: %s"
+msgstr ""
+
+#: src/client/main.js:601
+msgid "Validating contact form."
+msgstr ""
+
+#: src/client/main.js:619
+#, javascript-format
+msgid "Contact changes: %s; social changes: %d."
+msgstr ""
+
+#: src/client/main.js:620
+msgid "none"
+msgstr ""
+
+#: src/client/main.js:624
+#, javascript-format
+msgid "Submitting contact update for key %d."
+msgstr ""
+
+#: src/client/main.js:638
+msgid "Submitting new contact."
+msgstr ""
+
+#: src/client/main.js:646
+#, javascript-format
+msgid "Save request completed for contact key %d at version %d."
+msgstr ""
+
+#: src/client/main.js:657
+msgid "Contact saved"
+msgstr ""
+
+#: src/client/main.js:658
+#, javascript-format
+msgid "%s has been saved to the database."
+msgstr ""
+
+#: src/client/main.js:664
+msgid "No changes detected; nothing was sent to the database."
+msgstr ""
+
+#: src/client/main.js:672
+msgid "is required."
+msgstr ""
+
+#: src/client/main.js:687
+msgid "Every social account needs a platform."
+msgstr ""
+
+#: src/client/main.js:731
+msgid "Delete contact?"
+msgstr ""
+
+#: src/client/main.js:732
+#, javascript-format
+msgid "Delete %s? This will also remove their social accounts."
+msgstr ""
+
+#: src/client/main.js:738
+msgid "Delete"
+msgstr ""
+
+#: src/client/main.js:749
+msgid "Couldn't delete contact"
+msgstr ""
+
+#: src/client/contacts-api.js:9
+msgid "Method not allowed"
+msgstr ""
+
+#: src/client/contacts-api.js:10
+msgid "API route not found"
+msgstr ""
+
+#: src/client/contacts-api.js:11
+msgid "Contact not found"
+msgstr ""
+
+#: src/client/contacts-api.js:12
+msgid "Contact or social record not found"
+msgstr ""
+
+#: src/client/contacts-api.js:13
+msgid "Contact version conflict"
+msgstr ""
+
+#: src/client/contacts-api.js:14
+msgid "Contact or social version conflict"
+msgstr ""
+
+#: src/client/contacts-api.js:16
+msgid "The contact or social record conflicts with existing data"
+msgstr ""
+
+#: src/client/contacts-api.js:37
+msgid "Node.js is required to start the local API."
+msgstr ""
+
+#: src/client/contacts-api.js:62
+#, javascript-format
+msgid "Could not start the local API: %s"
+msgstr ""
+
+#: src/client/contacts-api.js:73
+msgid "The local API stopped unexpectedly."
+msgstr ""
+
+#: src/client/contacts-api.js:90
+msgid "The local API exited before it was ready."
+msgstr ""
+
+#: src/client/contacts-api.js:106
+msgid "The local API returned invalid startup details."
+msgstr ""
+
+#: src/client/contacts-api.js:113
+#, javascript-format
+msgid "Could not initialize the local API: %s"
+msgstr ""
+
+#: src/client/contacts-api.js:139
+#, javascript-format
+msgid "Could not read API diagnostics: %s"
+msgstr ""
+
+#: src/client/contacts-api.js:157
+msgid "The API returned an invalid contacts response."
+msgstr ""
+
+#: src/client/contacts-api.js:183
+msgid "The local API is not ready."
+msgstr ""
+
+#: src/client/contacts-api.js:187
+#, javascript-format
+msgid "HTTP %s %s started."
+msgstr ""
+
+#: src/client/contacts-api.js:206
+#, javascript-format
+msgid "HTTP %s %s returned status %d."
+msgstr ""
+
+#: src/client/contacts-api.js:216
+msgid "The API returned invalid JSON."
+msgstr ""
+
+#: src/client/contacts-api.js:221
+#, javascript-format
+msgid "API error code: %s"
+msgstr ""
+
+#: src/client/contacts-api.js:223
+msgid "unknown"
+msgstr ""
+
+#: src/client/contacts-api.js:229
+#, javascript-format
+msgid "API error message: %s"
+msgstr ""
+
+#: src/client/contacts-api.js:236
+#, javascript-format
+msgid "API request failed (%d)."
+msgstr ""
+
+#: src/client/contacts-api.js:245
+#, javascript-format
+msgid "HTTP %s %s failed: %s"
+msgstr ""
+
+#: src/client/contacts-api.js:252
+#, javascript-format
+msgid "API request failed: %s"
+msgstr ""

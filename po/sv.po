@@ -1,0 +1,339 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Time Manager\n"
+"PO-Revision-Date: 2026-11-09 15:00+0100\n"
+"Last-Translator: Time Manager contributors\n"
+"Language-Team: Swedish\n"
+"Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Name"
+msgstr "Namn"
+
+msgid "Street"
+msgstr "Gatuadress"
+
+msgid "Postcode"
+msgstr "Postnummer"
+
+msgid "City"
+msgstr "Ort"
+
+msgid "Phone"
+msgstr "Telefon"
+
+msgid "Email"
+msgstr "E-post"
+
+msgid "Tag"
+msgstr "Etikett"
+
+msgid "Comment"
+msgstr "Kommentar"
+
+msgid "Time Manager"
+msgstr "Tidshanterare"
+
+msgid "Search contacts"
+msgstr "Sök kontakter"
+
+msgid "Starting local service"
+msgstr "Startar den lokala tjänsten"
+
+msgid "Connecting to your contacts database..."
+msgstr "Ansluter till kontaktregistret..."
+
+msgid "No contacts found"
+msgstr "Inga kontakter hittades"
+
+msgid "Try another search or add your first contact."
+msgstr "Prova en annan sökning eller lägg till din första kontakt."
+
+msgid "Couldn't load contacts"
+msgstr "Det gick inte att läsa in kontakterna"
+
+msgid "Check the local service and try again."
+msgstr "Kontrollera den lokala tjänsten och försök igen."
+
+msgid "Contacts"
+msgstr "Kontakter"
+
+msgid "Refresh contacts"
+msgstr "Uppdatera kontakter"
+
+msgid "New"
+msgstr "Ny"
+
+msgid "Loading contact"
+msgstr "Läser in kontakten"
+
+msgid "Retrieving contact details..."
+msgstr "Hämtar kontaktuppgifter..."
+
+msgid "Contact details"
+msgstr "Kontaktuppgifter"
+
+msgid "Social accounts"
+msgstr "Sociala konton"
+
+#, c-format
+msgid "%d social account"
+msgid_plural "%d social accounts"
+msgstr[0] "%d socialt konto"
+msgstr[1] "%d sociala konton"
+
+msgid "Contact"
+msgstr "Kontakt"
+
+msgid "Edit"
+msgstr "Redigera"
+
+msgid "Delete contact"
+msgstr "Ta bort kontakt"
+
+msgid "Edit contact"
+msgstr "Redigera kontakt"
+
+msgid "New contact"
+msgstr "Ny kontakt"
+
+msgid "Cancel"
+msgstr "Avbryt"
+
+msgid "Save"
+msgstr "Spara"
+
+msgid "Saving..."
+msgstr "Sparar..."
+
+msgid "required"
+msgstr "obligatoriskt"
+
+msgid "Platform"
+msgstr "Plattform"
+
+msgid "User ID"
+msgstr "Användar-ID"
+
+msgid "New social account"
+msgstr "Nytt socialt konto"
+
+msgid "Remove social account"
+msgstr "Ta bort socialt konto"
+
+msgid "Add social account"
+msgstr "Lägg till socialt konto"
+
+msgid "is required."
+msgstr "måste anges."
+
+msgid "Every social account needs a platform."
+msgstr "Varje socialt konto måste ha en plattform."
+
+msgid "Contact saved"
+msgstr "Kontakten har sparats"
+
+#, c-format
+msgid "%s has been saved to the database."
+msgstr "%s har sparats i databasen."
+
+msgid "Delete contact?"
+msgstr "Ta bort kontakten?"
+
+#, c-format
+msgid "Delete %s? This will also remove their social accounts."
+msgstr "Ta bort %s? Då tas även personens sociala konton bort."
+
+msgid "Delete"
+msgstr "Ta bort"
+
+msgid "Couldn't delete contact"
+msgstr "Det gick inte att ta bort kontakten"
+
+msgid "Close"
+msgstr "Stäng"
+
+msgid "Node.js is required to start the local API."
+msgstr "Node.js krävs för att starta det lokala API:et."
+
+#, c-format
+msgid "Could not start the local API: %s"
+msgstr "Det gick inte att starta det lokala API:et: %s"
+
+msgid "The local API stopped unexpectedly."
+msgstr "Det lokala API:et avslutades oväntat."
+
+msgid "The local API exited before it was ready."
+msgstr "Det lokala API:et avslutades innan det blev tillgängligt."
+
+msgid "The local API returned invalid startup details."
+msgstr "Det lokala API:et returnerade ogiltig startinformation."
+
+#, c-format
+msgid "Could not initialize the local API: %s"
+msgstr "Det gick inte att initiera det lokala API:et: %s"
+
+#, c-format
+msgid "Could not read API diagnostics: %s"
+msgstr "Det gick inte att läsa API-diagnostiken: %s"
+
+msgid "The API returned an invalid contacts response."
+msgstr "API:et returnerade ett ogiltigt kontaktsvar."
+
+msgid "The local API is not ready."
+msgstr "Det lokala API:et är inte tillgängligt."
+
+msgid "The API returned invalid JSON."
+msgstr "API:et returnerade ogiltig JSON."
+
+#, c-format
+msgid "API request failed (%d)."
+msgstr "API-begäran misslyckades (%d)."
+
+msgid "Method not allowed"
+msgstr "Metoden tillåts inte"
+
+msgid "API route not found"
+msgstr "API-rutten hittades inte"
+
+msgid "Contact not found"
+msgstr "Kontakten hittades inte"
+
+msgid "Contact or social record not found"
+msgstr "Kontakten eller det sociala kontot hittades inte"
+
+msgid "Contact version conflict"
+msgstr "Kontaktversionen har ändrats"
+
+msgid "Contact or social version conflict"
+msgstr "Kontaktversionen eller versionen av det sociala kontot har ändrats"
+
+msgid "The contact or social record conflicts with existing data"
+msgstr "Kontakten eller det sociala kontot strider mot befintliga uppgifter"
+
+msgid "Show Log"
+msgstr "Visa logg"
+
+msgid "Application menu"
+msgstr "Programmeny"
+
+msgid "Diagnostic log opened."
+msgstr "Diagnostikloggen öppnades."
+
+msgid "Diagnostic Log"
+msgstr "Diagnostiklogg"
+
+msgid "Clear Log"
+msgstr "Rensa logg"
+
+msgid "Log cleared."
+msgstr "Loggen rensades."
+
+msgid "Local contacts client started."
+msgstr "Den lokala kontaktklienten startades."
+
+msgid "Client window closed."
+msgstr "Klientfönstret stängdes."
+
+#, c-format
+msgid "Local API stopped unexpectedly: %s"
+msgstr "Det lokala API:et avslutades oväntat: %s"
+
+msgid "Starting local API."
+msgstr "Startar det lokala API:et."
+
+#, c-format
+msgid "Local API ready at %s."
+msgstr "Det lokala API:et är redo på %s."
+
+#, c-format
+msgid "Local API startup failed: %s"
+msgstr "Det gick inte att starta det lokala API:et: %s"
+
+msgid "Loading contacts."
+msgstr "Läser in kontakter."
+
+#, c-format
+msgid "%d contact loaded."
+msgid_plural "%d contacts loaded."
+msgstr[0] "%d kontakt lästes in."
+msgstr[1] "%d kontakter lästes in."
+
+#, c-format
+msgid "Loading contacts failed: %s"
+msgstr "Det gick inte att läsa in kontakter: %s"
+
+#, c-format
+msgid "Contact details loaded (key %d)."
+msgstr "Kontaktuppgifter lästes in (nyckel %d)."
+
+#, c-format
+msgid "Loading contact details failed: %s"
+msgstr "Det gick inte att läsa in kontaktuppgifterna: %s"
+
+#, c-format
+msgid "Opening editor for contact key %d."
+msgstr "Öppnar redigering för kontakt med nyckel %d."
+
+msgid "Save clicked for %s contact."
+msgstr "Spara klickades för en %s kontakt."
+
+msgid "existing"
+msgstr "befintlig"
+
+msgid "new"
+msgstr "ny"
+
+msgid "Contact save failed: %s"
+msgstr "Det gick inte att spara kontakten: %s"
+
+msgid "Validating contact form."
+msgstr "Validerar kontaktformuläret."
+
+msgid "Contact changes: %s; social changes: %d."
+msgstr "Kontaktändringar: %s; ändringar av sociala konton: %d."
+
+msgid "none"
+msgstr "inga"
+
+#, c-format
+msgid "Submitting contact update for key %d."
+msgstr "Skickar uppdatering för kontakt med nyckel %d."
+
+msgid "Submitting new contact."
+msgstr "Skickar ny kontakt."
+
+#, c-format
+msgid "Save request completed for contact key %d at version %d."
+msgstr "Sparbegäran slutfördes för kontakt med nyckel %d, version %d."
+
+msgid "No changes detected; nothing was sent to the database."
+msgstr "Inga ändringar hittades; inget skickades till databasen."
+
+#, c-format
+msgid "HTTP %s %s started."
+msgstr "HTTP %s %s startades."
+
+#, c-format
+msgid "HTTP %s %s returned status %d."
+msgstr "HTTP %s %s returnerade status %d."
+
+#, c-format
+msgid "API error code: %s"
+msgstr "API-felkod: %s"
+
+msgid "unknown"
+msgstr "okänd"
+
+#, c-format
+msgid "HTTP %s %s failed: %s"
+msgstr "HTTP %s %s misslyckades: %s"
+
+msgid "API error message: %s"
+msgstr "API-felmeddelande: %s"
+
+msgid "API request failed: %s"
+msgstr "API-begäran misslyckades: %s"
