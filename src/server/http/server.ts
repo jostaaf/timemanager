@@ -6,6 +6,8 @@ import {
   type ServerResponse,
 } from "node:http";
 import { handleContactsApiRequest, type ApiResponse } from "../api/contacts.js";
+import { handleEventsApiRequest } from "../api/events.js";
+import { handleNotesApiRequest } from "../api/notes.js";
 
 const MAX_REQUEST_BYTES = 1024 * 1024;
 
@@ -101,7 +103,12 @@ function createApiServer(token: string): Server {
         }
       }
 
-      sendJson(response, handleContactsApiRequest(request.method ?? "GET", url, body));
+      const handleRequest = url.pathname.startsWith("/api/events")
+        ? handleEventsApiRequest
+        : url.pathname.startsWith("/api/notes")
+          ? handleNotesApiRequest
+          : handleContactsApiRequest;
+      sendJson(response, handleRequest(request.method ?? "GET", url, body));
     } catch (error) {
       console.error("API request failed", error);
       sendJson(response, {

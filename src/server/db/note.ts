@@ -43,6 +43,25 @@ export function insertNote(input: CreateNoteInput): NoteRecord {
   return inserted;
 }
 
+export function insertNoteWithGeneratedKey(
+  input: Omit<CreateNoteInput, "key">,
+): NoteRecord {
+  assertNonBlank(input.heading, "heading");
+  assertNonBlank(input.text, "text");
+
+  const inserted = db
+    .prepare<Omit<CreateNoteInput, "key">, NoteRecord>(
+      `INSERT INTO note ("created_at", "heading", "text")
+       VALUES (@created_at, @heading, @text)
+       RETURNING *`,
+    )
+    .get(input);
+  if (!inserted) {
+    throw new Error("Inserting note did not return a record");
+  }
+  return inserted;
+}
+
 export function getNoteByKey(key: number): NoteRecord | undefined {
   return db
     .prepare<[number], NoteRecord>('SELECT * FROM note WHERE "key" = ?')

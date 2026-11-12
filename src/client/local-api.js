@@ -12,12 +12,20 @@ const apiErrorMessages = {
   social_not_found: _("Contact or social record not found"),
   contact_conflict: _("Contact version conflict"),
   social_conflict: _("Contact or social version conflict"),
+  event_not_found: _("Event not found"),
+  event_conflict: _("Event version conflict"),
+  event_contact_not_found: _("Event contact assignment not found"),
+  duplicate_contact: _("A contact can only be assigned to an event once"),
+  note_not_found: _("Note not found"),
+  note_conflict: _("Note version conflict"),
+  duplicate_note_contact: _("A contact can only be assigned to a note once"),
+  duplicate_note_event: _("An event can only be assigned to a note once"),
   constraint_violation: _(
-    "The contact or social record conflicts with existing data",
+    "The record conflicts with existing data",
   ),
 };
 
-export class ContactsApi {
+export class LocalApi {
   constructor(projectRoot) {
     this.projectRoot = projectRoot;
     this.session = new Soup.Session();
@@ -178,6 +186,73 @@ export class ContactsApi {
     });
   }
 
+  getEvents(searchText = "") {
+    const query = searchText.trim();
+    const path = `/api/events${query ? `?name=${encodeURIComponent(query)}` : ""}`;
+    return this._request("GET", path).then((payload) => {
+      if (!Array.isArray(payload?.events)) {
+        throw new Error(_("The API returned an invalid events response."));
+      }
+      return payload.events;
+    });
+  }
+
+  getEvent(eventKey) {
+    return this._request("GET", `/api/events/${eventKey}`);
+  }
+
+  createEvent(event) {
+    return this._request("POST", "/api/events", event);
+  }
+
+  updateEvent(eventKey, input) {
+    return this._request("PATCH", `/api/events/${eventKey}`, input);
+  }
+
+  deleteEvent(eventKey, expectedVersion) {
+    return this._request("DELETE", `/api/events/${eventKey}`, {
+      expectedVersion,
+    });
+  }
+
+  getNotes(searchText = "") {
+    const query = searchText.trim();
+    const path = `/api/notes${query ? `?q=${encodeURIComponent(query)}` : ""}`;
+    return this._getNotes(path);
+  }
+
+  getNotesForEvent(eventKey) {
+    const path = `/api/notes?eventKey=${encodeURIComponent(eventKey)}`;
+    return this._getNotes(path);
+  }
+
+  _getNotes(path) {
+    return this._request("GET", path).then((payload) => {
+      if (!Array.isArray(payload?.notes)) {
+        throw new Error(_("The API returned an invalid notes response."));
+      }
+      return payload.notes;
+    });
+  }
+
+  getNote(noteKey) {
+    return this._request("GET", `/api/notes/${noteKey}`);
+  }
+
+  createNote(note) {
+    return this._request("POST", "/api/notes", note);
+  }
+
+  updateNote(noteKey, input) {
+    return this._request("PATCH", `/api/notes/${noteKey}`, input);
+  }
+
+  deleteNote(noteKey, expectedVersion) {
+    return this._request("DELETE", `/api/notes/${noteKey}`, {
+      expectedVersion,
+    });
+  }
+
   _request(method, path, body = undefined) {
     if (!this.baseUrl || !this.token) {
       return Promise.reject(new Error(_("The local API is not ready.")));
@@ -265,6 +340,7 @@ export class ContactsApi {
       if (input && !input.is_closed()) input.close(null);
     }
     this.process = null;
+    this.baseUrl = null;
     this.token = null;
   }
 }

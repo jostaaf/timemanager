@@ -27,6 +27,22 @@ export function insertEvent(
   return inserted;
 }
 
+export function insertEventWithGeneratedKey(
+  record: Omit<EventRecord, "key" | "version">,
+): EventRecord {
+  const inserted = db
+    .prepare<Omit<EventRecord, "key" | "version">, EventRecord>(
+      `INSERT INTO event ("version", "name", "start", "end", "comment")
+       VALUES (1, @name, @start, @end, @comment)
+       RETURNING *`,
+    )
+    .get(record);
+  if (!inserted) {
+    throw new Error("Inserting event did not return a record");
+  }
+  return inserted;
+}
+
 export function getEventByKey(key: number): EventRecord | undefined {
   return db
     .prepare<[number], EventRecord>('SELECT * FROM event WHERE "key" = ?')

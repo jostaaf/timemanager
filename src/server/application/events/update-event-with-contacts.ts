@@ -7,6 +7,7 @@ import {
   getEventContactByPair,
   getEventContactsForEvent,
   insertEventContact,
+  insertEventContactWithGeneratedKey,
   updateEventContact,
 } from "../../db/event-contacts.js";
 import type {
@@ -19,7 +20,7 @@ import { isUtcIsoTimestamp } from "../timestamps.js";
 
 type NewLink = {
   type: "add";
-  key: number;
+  key?: number;
   contactKey: number;
   role?: string | null;
 };
@@ -54,6 +55,7 @@ export type UpdateEventWithContactsResult =
     }
   | { status: "event_not_found" }
   | { status: "event_conflict"; currentVersion: number }
+  | { status: "invalid_range" }
   | { status: "invalid_timestamp"; field: "start" | "end" }
   | { status: "contact_not_found"; contactKey: number }
   | { status: "duplicate_contact"; contactKey: number }
@@ -83,6 +85,9 @@ export function updateEventWithContacts(
     }
     if (!isUtcIsoTimestamp(updatedEnd)) {
       return { status: "invalid_timestamp", field: "end" };
+    }
+    if (updatedEnd <= updatedStart) {
+      return { status: "invalid_range" };
     }
 
     const changedLinkKeys = new Set<number>();
@@ -151,12 +156,16 @@ export function updateEventWithContacts(
 
     for (const change of input.contactChanges) {
       if (change.type === "add") {
-        insertEventContact({
-          key: change.key,
+        const newLink = {
           event_key: input.eventKey,
           contact_key: change.contactKey,
           role: change.role ?? null,
-        });
+        };
+        if (change.key === undefined) {
+          insertEventContactWithGeneratedKey(newLink);
+        } else {
+          insertEventContact({ key: change.key, ...newLink });
+        }
       } else if (change.type === "update") {
         const result = updateEventContact(
           change.key,

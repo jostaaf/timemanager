@@ -10,7 +10,7 @@
     "check": "npm run db:types && tsc --noEmit",
     "test": "npm run build && node --test tests/*.test.mjs",
     "api:start": "npm run build && node dist/server/http/main.js",
-    "i18n:extract": "xgettext --language=JavaScript --from-code=UTF-8 --keyword=_ --keyword=ngettext:1,2 --output=po/timemanager.pot src/client/main.js src/client/contacts-api.js",
+    "i18n:extract": "xgettext --language=JavaScript --from-code=UTF-8 --keyword=_ --keyword=ngettext:1,2 --keyword=translate:1 --output=po/timemanager.pot src/client/main.js src/client/contacts-view.js src/client/events-view.js src/client/notes-view.js src/client/form-model.js src/client/shared-ui.js src/client/local-api.js",
     "i18n:compile": "python3 scripts/compile-translations.py",
     "client:gnome": "npm run build && npm run i18n:compile && env -u GIO_MODULE_DIR gjs -m src/client/main.js"
   },

@@ -1,6 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Time Manager\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-12 16:46+0100\n"
 "PO-Revision-Date: 2026-11-09 15:00+0100\n"
 "Last-Translator: Time Manager contributors\n"
 "Language-Team: Swedish\n"
@@ -10,330 +12,852 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Name"
-msgstr "Namn"
+#: src/client/main.js:33
+msgid "Local contacts, events, and notes client started."
+msgstr ""
+"Den lokala klienten för kontakter, evenemang och anteckningar startades."
 
-msgid "Street"
-msgstr "Gatuadress"
-
-msgid "Postcode"
-msgstr "Postnummer"
-
-msgid "City"
-msgstr "Ort"
-
-msgid "Phone"
-msgstr "Telefon"
-
-msgid "Email"
-msgstr "E-post"
-
-msgid "Tag"
-msgstr "Etikett"
-
-msgid "Comment"
-msgstr "Kommentar"
-
+#: src/client/main.js:37
 msgid "Time Manager"
 msgstr "Tidshanterare"
 
-msgid "Search contacts"
-msgstr "Sök kontakter"
-
-msgid "Starting local service"
-msgstr "Startar den lokala tjänsten"
-
-msgid "Connecting to your contacts database..."
-msgstr "Ansluter till kontaktregistret..."
-
-msgid "No contacts found"
-msgstr "Inga kontakter hittades"
-
-msgid "Try another search or add your first contact."
-msgstr "Prova en annan sökning eller lägg till din första kontakt."
-
-msgid "Couldn't load contacts"
-msgstr "Det gick inte att läsa in kontakterna"
-
-msgid "Check the local service and try again."
-msgstr "Kontrollera den lokala tjänsten och försök igen."
-
-msgid "Contacts"
-msgstr "Kontakter"
-
-msgid "Refresh contacts"
-msgstr "Uppdatera kontakter"
-
-msgid "New"
-msgstr "Ny"
-
-msgid "Loading contact"
-msgstr "Läser in kontakten"
-
-msgid "Retrieving contact details..."
-msgstr "Hämtar kontaktuppgifter..."
-
-msgid "Contact details"
-msgstr "Kontaktuppgifter"
-
-msgid "Social accounts"
-msgstr "Sociala konton"
-
-#, c-format
-msgid "%d social account"
-msgid_plural "%d social accounts"
-msgstr[0] "%d socialt konto"
-msgstr[1] "%d sociala konton"
-
-msgid "Contact"
-msgstr "Kontakt"
-
-msgid "Edit"
-msgstr "Redigera"
-
-msgid "Delete contact"
-msgstr "Ta bort kontakt"
-
-msgid "Edit contact"
-msgstr "Redigera kontakt"
-
-msgid "New contact"
-msgstr "Ny kontakt"
-
-msgid "Cancel"
-msgstr "Avbryt"
-
-msgid "Save"
-msgstr "Spara"
-
-msgid "Saving..."
-msgstr "Sparar..."
-
-msgid "required"
-msgstr "obligatoriskt"
-
-msgid "Platform"
-msgstr "Plattform"
-
-msgid "User ID"
-msgstr "Användar-ID"
-
-msgid "New social account"
-msgstr "Nytt socialt konto"
-
-msgid "Remove social account"
-msgstr "Ta bort socialt konto"
-
-msgid "Add social account"
-msgstr "Lägg till socialt konto"
-
-msgid "is required."
-msgstr "måste anges."
-
-msgid "Every social account needs a platform."
-msgstr "Varje socialt konto måste ha en plattform."
-
-msgid "Contact saved"
-msgstr "Kontakten har sparats"
-
-#, c-format
-msgid "%s has been saved to the database."
-msgstr "%s har sparats i databasen."
-
-msgid "Delete contact?"
-msgstr "Ta bort kontakten?"
-
-#, c-format
-msgid "Delete %s? This will also remove their social accounts."
-msgstr "Ta bort %s? Då tas även personens sociala konton bort."
-
-msgid "Delete"
-msgstr "Ta bort"
-
-msgid "Couldn't delete contact"
-msgstr "Det gick inte att ta bort kontakten"
-
-msgid "Close"
-msgstr "Stäng"
-
-msgid "Node.js is required to start the local API."
-msgstr "Node.js krävs för att starta det lokala API:et."
-
-#, c-format
-msgid "Could not start the local API: %s"
-msgstr "Det gick inte att starta det lokala API:et: %s"
-
-msgid "The local API stopped unexpectedly."
-msgstr "Det lokala API:et avslutades oväntat."
-
-msgid "The local API exited before it was ready."
-msgstr "Det lokala API:et avslutades innan det blev tillgängligt."
-
-msgid "The local API returned invalid startup details."
-msgstr "Det lokala API:et returnerade ogiltig startinformation."
-
-#, c-format
-msgid "Could not initialize the local API: %s"
-msgstr "Det gick inte att initiera det lokala API:et: %s"
-
-#, c-format
-msgid "Could not read API diagnostics: %s"
-msgstr "Det gick inte att läsa API-diagnostiken: %s"
-
-msgid "The API returned an invalid contacts response."
-msgstr "API:et returnerade ett ogiltigt kontaktsvar."
-
-msgid "The local API is not ready."
-msgstr "Det lokala API:et är inte tillgängligt."
-
-msgid "The API returned invalid JSON."
-msgstr "API:et returnerade ogiltig JSON."
-
-#, c-format
-msgid "API request failed (%d)."
-msgstr "API-begäran misslyckades (%d)."
-
-msgid "Method not allowed"
-msgstr "Metoden tillåts inte"
-
-msgid "API route not found"
-msgstr "API-rutten hittades inte"
-
-msgid "Contact not found"
-msgstr "Kontakten hittades inte"
-
-msgid "Contact or social record not found"
-msgstr "Kontakten eller det sociala kontot hittades inte"
-
-msgid "Contact version conflict"
-msgstr "Kontaktversionen har ändrats"
-
-msgid "Contact or social version conflict"
-msgstr "Kontaktversionen eller versionen av det sociala kontot har ändrats"
-
-msgid "The contact or social record conflicts with existing data"
-msgstr "Kontakten eller det sociala kontot strider mot befintliga uppgifter"
-
-msgid "Show Log"
-msgstr "Visa logg"
-
-msgid "Application menu"
-msgstr "Programmeny"
-
-msgid "Diagnostic log opened."
-msgstr "Diagnostikloggen öppnades."
-
-msgid "Diagnostic Log"
-msgstr "Diagnostiklogg"
-
-msgid "Clear Log"
-msgstr "Rensa logg"
-
-msgid "Log cleared."
-msgstr "Loggen rensades."
-
-msgid "Local contacts client started."
-msgstr "Den lokala kontaktklienten startades."
-
+#: src/client/main.js:42
 msgid "Client window closed."
 msgstr "Klientfönstret stängdes."
 
-#, c-format
+#: src/client/main.js:86
+#, javascript-format
 msgid "Local API stopped unexpectedly: %s"
 msgstr "Det lokala API:et avslutades oväntat: %s"
 
+#: src/client/main.js:116
 msgid "Starting local API."
 msgstr "Startar det lokala API:et."
 
-#, c-format
+#: src/client/main.js:119
+#, javascript-format
 msgid "Local API ready at %s."
 msgstr "Det lokala API:et är redo på %s."
 
-#, c-format
+#: src/client/main.js:130
+#, javascript-format
 msgid "Local API startup failed: %s"
 msgstr "Det gick inte att starta det lokala API:et: %s"
 
+#: src/client/main.js:153
+msgid "Diagnostic log opened."
+msgstr "Diagnostikloggen öppnades."
+
+#: src/client/main.js:181 src/client/main.js:197
+msgid "Diagnostic Log"
+msgstr "Diagnostiklogg"
+
+#: src/client/main.js:183
+msgid "Clear Log"
+msgstr "Rensa logg"
+
+#: src/client/main.js:186
+msgid "Log cleared."
+msgstr "Loggen rensades."
+
+#: src/client/main.js:189 src/client/shared-ui.js:64
+msgid "Close"
+msgstr "Stäng"
+
+#: src/client/main.js:220
+msgid "Local API error"
+msgstr "Lokalt API-fel"
+
+#: src/client/contacts-view.js:19 src/client/events-view.js:23
+msgid "Name"
+msgstr "Namn"
+
+#: src/client/contacts-view.js:20
+msgid "Street"
+msgstr "Gatuadress"
+
+#: src/client/contacts-view.js:21
+msgid "Postcode"
+msgstr "Postnummer"
+
+#: src/client/contacts-view.js:22
+msgid "City"
+msgstr "Ort"
+
+#: src/client/contacts-view.js:23
+msgid "Phone"
+msgstr "Telefon"
+
+#: src/client/contacts-view.js:24
+msgid "Email"
+msgstr "E-post"
+
+#: src/client/contacts-view.js:25
+msgid "Tag"
+msgstr "Etikett"
+
+#: src/client/contacts-view.js:26 src/client/contacts-view.js:356
+#: src/client/events-view.js:28 src/client/events-view.js:234
+msgid "Comment"
+msgstr "Kommentar"
+
+#: src/client/contacts-view.js:63 src/client/events-view.js:451
+msgid "Search contacts"
+msgstr "Sök kontakter"
+
+#: src/client/contacts-view.js:74
+msgid "Starting local service"
+msgstr "Startar den lokala tjänsten"
+
+#: src/client/contacts-view.js:75
+msgid "Connecting to your contacts database..."
+msgstr "Ansluter till kontaktregistret..."
+
+#: src/client/contacts-view.js:79
+msgid "No contacts found"
+msgstr "Inga kontakter hittades"
+
+#: src/client/contacts-view.js:80
+msgid "Try another search or add your first contact."
+msgstr "Prova en annan sökning eller lägg till din första kontakt."
+
+#: src/client/contacts-view.js:84 src/client/events-view.js:320
+msgid "Couldn't load contacts"
+msgstr "Det gick inte att läsa in kontakterna"
+
+#: src/client/contacts-view.js:85 src/client/events-view.js:89
+#: src/client/notes-view.js:74
+msgid "Check the local service and try again."
+msgstr "Kontrollera den lokala tjänsten och försök igen."
+
+#: src/client/contacts-view.js:104 src/client/events-view.js:109
+#: src/client/events-view.js:270 src/client/notes-view.js:94
+#: src/client/notes-view.js:282
+msgid "Contacts"
+msgstr "Kontakter"
+
+#: src/client/contacts-view.js:105 src/client/contacts-view.js:255
+#: src/client/events-view.js:108 src/client/notes-view.js:97
+#: src/client/notes-view.js:285
+msgid "Events"
+msgstr "Evenemang"
+
+#: src/client/contacts-view.js:108 src/client/contacts-view.js:258
+#: src/client/events-view.js:112 src/client/events-view.js:252
+#: src/client/events-view.js:273 src/client/events-view.js:408
+#: src/client/notes-view.js:93
+msgid "Notes"
+msgstr "Anteckningar"
+
+#: src/client/contacts-view.js:114
+msgid "Refresh contacts"
+msgstr "Uppdatera kontakter"
+
+#: src/client/contacts-view.js:120 src/client/events-view.js:124
+#: src/client/notes-view.js:108
+msgid "New"
+msgstr "Ny"
+
+#: src/client/contacts-view.js:141
 msgid "Loading contacts."
 msgstr "Läser in kontakter."
 
-#, c-format
+#: src/client/contacts-view.js:149
+#, javascript-format
 msgid "%d contact loaded."
 msgid_plural "%d contacts loaded."
 msgstr[0] "%d kontakt lästes in."
 msgstr[1] "%d kontakter lästes in."
 
-#, c-format
+#: src/client/contacts-view.js:153
+#, javascript-format
 msgid "Loading contacts failed: %s"
 msgstr "Det gick inte att läsa in kontakter: %s"
 
-#, c-format
+#: src/client/contacts-view.js:173
+#, javascript-format
+msgid "%d social account"
+msgid_plural "%d social accounts"
+msgstr[0] "%d socialt konto"
+msgstr[1] "%d sociala konton"
+
+#: src/client/contacts-view.js:193
+msgid "Contact"
+msgstr "Kontakt"
+
+#: src/client/contacts-view.js:195
+msgid "Loading contact"
+msgstr "Läser in kontakten"
+
+#: src/client/contacts-view.js:196
+msgid "Retrieving contact details..."
+msgstr "Hämtar kontaktuppgifter..."
+
+#: src/client/contacts-view.js:207
+#, javascript-format
 msgid "Contact details loaded (key %d)."
 msgstr "Kontaktuppgifter lästes in (nyckel %d)."
 
-#, c-format
+#: src/client/contacts-view.js:214
+#, javascript-format
 msgid "Loading contact details failed: %s"
 msgstr "Det gick inte att läsa in kontaktuppgifterna: %s"
 
-#, c-format
+#: src/client/contacts-view.js:231 src/client/contacts-view.js:328
+msgid "Contact details"
+msgstr "Kontaktuppgifter"
+
+#: src/client/contacts-view.js:238 src/client/contacts-view.js:342
+msgid "Social accounts"
+msgstr "Sociala konton"
+
+#: src/client/contacts-view.js:262 src/client/events-view.js:289
+#: src/client/notes-view.js:289
+msgid "Edit"
+msgstr "Redigera"
+
+#: src/client/contacts-view.js:264
+#, javascript-format
 msgid "Opening editor for contact key %d."
 msgstr "Öppnar redigering för kontakt med nyckel %d."
 
+#: src/client/contacts-view.js:273
+msgid "Delete contact"
+msgstr "Ta bort kontakt"
+
+#: src/client/contacts-view.js:292 src/client/contacts-view.js:299
+msgid "Edit contact"
+msgstr "Redigera kontakt"
+
+#: src/client/contacts-view.js:292 src/client/contacts-view.js:299
+msgid "New contact"
+msgstr "Ny kontakt"
+
+#: src/client/contacts-view.js:302 src/client/contacts-view.js:524
+#: src/client/events-view.js:343 src/client/events-view.js:600
+#: src/client/notes-view.js:347 src/client/notes-view.js:580
+msgid "Cancel"
+msgstr "Avbryt"
+
+#: src/client/contacts-view.js:305 src/client/contacts-view.js:423
+#: src/client/events-view.js:346 src/client/events-view.js:524
+#: src/client/notes-view.js:350 src/client/notes-view.js:481
+msgid "Save"
+msgstr "Spara"
+
+#: src/client/contacts-view.js:333 src/client/contacts-view.js:353
+#: src/client/events-view.js:380 src/client/notes-view.js:375
+#: src/client/notes-view.js:382
+msgid "required"
+msgstr "obligatoriskt"
+
+#: src/client/contacts-view.js:348 src/client/contacts-view.js:364
+msgid "New social account"
+msgstr "Nytt socialt konto"
+
+#: src/client/contacts-view.js:353
+msgid "Platform"
+msgstr "Plattform"
+
+#: src/client/contacts-view.js:355
+msgid "User ID"
+msgstr "Användar-ID"
+
+#: src/client/contacts-view.js:371
+msgid "Remove social account"
+msgstr "Ta bort socialt konto"
+
+#: src/client/contacts-view.js:384
+msgid "Add social account"
+msgstr "Lägg till socialt konto"
+
+#: src/client/contacts-view.js:402
+#, javascript-format
 msgid "Save clicked for %s contact."
 msgstr "Spara klickades för en %s kontakt."
 
+#: src/client/contacts-view.js:404
 msgid "existing"
 msgstr "befintlig"
 
+#: src/client/contacts-view.js:404
 msgid "new"
 msgstr "ny"
 
+#: src/client/contacts-view.js:408 src/client/events-view.js:510
+#: src/client/notes-view.js:464
+msgid "Saving..."
+msgstr "Sparar..."
+
+#: src/client/contacts-view.js:419
+#, javascript-format
 msgid "Contact save failed: %s"
 msgstr "Det gick inte att spara kontakten: %s"
 
+#: src/client/contacts-view.js:439
 msgid "Validating contact form."
 msgstr "Validerar kontaktformuläret."
 
+#: src/client/contacts-view.js:468
+#, javascript-format
 msgid "Contact changes: %s; social changes: %d."
 msgstr "Kontaktändringar: %s; ändringar av sociala konton: %d."
 
+#: src/client/contacts-view.js:469
 msgid "none"
 msgstr "inga"
 
-#, c-format
+#: src/client/contacts-view.js:473
+#, javascript-format
 msgid "Submitting contact update for key %d."
 msgstr "Skickar uppdatering för kontakt med nyckel %d."
 
+#: src/client/contacts-view.js:487
 msgid "Submitting new contact."
 msgstr "Skickar ny kontakt."
 
-#, c-format
+#: src/client/contacts-view.js:495
+#, javascript-format
 msgid "Save request completed for contact key %d at version %d."
 msgstr "Sparbegäran slutfördes för kontakt med nyckel %d, version %d."
 
+#: src/client/contacts-view.js:507
+msgid "Contact saved"
+msgstr "Kontakten har sparats"
+
+#: src/client/contacts-view.js:508 src/client/events-view.js:586
+#: src/client/notes-view.js:568
+#, javascript-format
+msgid "%s has been saved to the database."
+msgstr "%s har sparats i databasen."
+
+#: src/client/contacts-view.js:511
 msgid "No changes detected; nothing was sent to the database."
 msgstr "Inga ändringar hittades; inget skickades till databasen."
 
-#, c-format
+#: src/client/contacts-view.js:518
+msgid "Delete contact?"
+msgstr "Ta bort kontakten?"
+
+#: src/client/contacts-view.js:519
+#, javascript-format
+msgid "Delete %s? This will also remove their social accounts."
+msgstr "Ta bort %s? Då tas även personens sociala konton bort."
+
+#: src/client/contacts-view.js:525 src/client/events-view.js:601
+#: src/client/notes-view.js:581
+msgid "Delete"
+msgstr "Ta bort"
+
+#: src/client/contacts-view.js:536
+msgid "Couldn't delete contact"
+msgstr "Det gick inte att ta bort kontakten"
+
+#: src/client/events-view.js:24
+msgid "Start date (YYYY-MM-DD)"
+msgstr "Startdatum (ÅÅÅÅ-MM-DD)"
+
+#: src/client/events-view.js:25
+msgid "Start time (HH:MM)"
+msgstr "Starttid (HH:MM)"
+
+#: src/client/events-view.js:26
+msgid "End date (YYYY-MM-DD)"
+msgstr "Slutdatum (ÅÅÅÅ-MM-DD)"
+
+#: src/client/events-view.js:27
+msgid "End time (HH:MM)"
+msgstr "Sluttid (HH:MM)"
+
+#: src/client/events-view.js:67
+msgid "Search events"
+msgstr "Sök evenemang"
+
+#: src/client/events-view.js:78
+msgid "Loading events"
+msgstr "Läser in evenemang"
+
+#: src/client/events-view.js:79
+msgid "Retrieving your events..."
+msgstr "Hämtar dina evenemang..."
+
+#: src/client/events-view.js:83
+msgid "No events found"
+msgstr "Inga evenemang hittades"
+
+#: src/client/events-view.js:84
+msgid "Try another search or add your first event."
+msgstr "Prova en annan sökning eller lägg till ditt första evenemang."
+
+#: src/client/events-view.js:88
+msgid "Couldn't load events"
+msgstr "Det gick inte att läsa in evenemangen"
+
+#: src/client/events-view.js:118
+msgid "Refresh events"
+msgstr "Uppdatera evenemang"
+
+#: src/client/events-view.js:150
+msgid "Loading events."
+msgstr "Läser in evenemang."
+
+#: src/client/events-view.js:157
+#, javascript-format
+msgid "%d event loaded."
+msgid_plural "%d events loaded."
+msgstr[0] "%d evenemang lästes in."
+msgstr[1] "%d evenemang lästes in."
+
+#: src/client/events-view.js:161
+#, javascript-format
+msgid "Loading events failed: %s"
+msgstr "Det gick inte att läsa in evenemang: %s"
+
+#: src/client/events-view.js:190
+msgid "Event"
+msgstr "Evenemang"
+
+#: src/client/events-view.js:192
+msgid "Loading event"
+msgstr "Läser in evenemang"
+
+#: src/client/events-view.js:193
+msgid "Retrieving event details..."
+msgstr "Hämtar evenemangsuppgifter..."
+
+#: src/client/events-view.js:208
+#, javascript-format
+msgid "Event details loaded (key %d)."
+msgstr "Evenemangsuppgifter lästes in (nyckel %d)."
+
+#: src/client/events-view.js:214
+#, javascript-format
+msgid "Loading event details failed: %s"
+msgstr "Det gick inte att läsa in evenemangsuppgifterna: %s"
+
+#: src/client/events-view.js:216
+msgid "Couldn't load event"
+msgstr "Det gick inte att läsa in evenemanget"
+
+#: src/client/events-view.js:231 src/client/events-view.js:368
+msgid "Event details"
+msgstr "Evenemangsuppgifter"
+
+#: src/client/events-view.js:232
+msgid "Starts"
+msgstr "Startar"
+
+#: src/client/events-view.js:233
+msgid "Ends"
+msgstr "Slutar"
+
+#: src/client/events-view.js:238 src/client/events-view.js:447
+#: src/client/notes-view.js:245
+msgid "Assigned contacts"
+msgstr "Tilldelade kontakter"
+
+#: src/client/events-view.js:248 src/client/notes-view.js:255
+msgid "No assigned contacts"
+msgstr "Inga tilldelade kontakter"
+
+#: src/client/events-view.js:259 src/client/events-view.js:415
+msgid "No notes linked to this event"
+msgstr "Inga anteckningar är kopplade till det här evenemanget."
+
+#: src/client/events-view.js:278 src/client/events-view.js:420
+msgid "Add note"
+msgstr "Lägg till anteckning"
+
+#: src/client/events-view.js:294
+msgid "Delete event"
+msgstr "Ta bort evenemang"
+
+#: src/client/events-view.js:333 src/client/events-view.js:340
+msgid "Edit event"
+msgstr "Redigera evenemang"
+
+#: src/client/events-view.js:333 src/client/events-view.js:340
+msgid "New event"
+msgstr "Nytt evenemang"
+
+#: src/client/events-view.js:402
+msgid "Event date and time use your local time zone."
+msgstr "Evenemangets datum och tid anges i din lokala tidszon."
+
+#: src/client/events-view.js:457
+msgid "No matching contacts"
+msgstr "Inga kontakter matchar sökningen."
+
+#: src/client/events-view.js:458 src/client/notes-view.js:429
+msgid "No contacts available"
+msgstr "Inga kontakter tillgängliga"
+
+#: src/client/events-view.js:469
+msgid "Role"
+msgstr "Roll"
+
+#: src/client/events-view.js:520
+#, javascript-format
+msgid "Event save failed: %s"
+msgstr "Det gick inte att spara evenemanget: %s"
+
+#: src/client/events-view.js:585
+msgid "Event saved"
+msgstr "Evenemanget har sparats"
+
+#: src/client/events-view.js:594
+msgid "Delete event?"
+msgstr "Ta bort evenemanget?"
+
+#: src/client/events-view.js:595
+#, javascript-format
+msgid "Delete %s? Its notes will be kept."
+msgstr "Ta bort %s? Dess anteckningar kommer att behållas."
+
+#: src/client/events-view.js:612
+msgid "Couldn't delete event"
+msgstr "Det gick inte att ta bort evenemanget"
+
+#: src/client/notes-view.js:52
+msgid "Search notes"
+msgstr "Sök anteckningar"
+
+#: src/client/notes-view.js:63
+msgid "Loading notes"
+msgstr "Läser in anteckningar"
+
+#: src/client/notes-view.js:64
+msgid "Retrieving your notes..."
+msgstr "Hämtar dina anteckningar..."
+
+#: src/client/notes-view.js:68
+msgid "No notes found"
+msgstr "Inga anteckningar hittades"
+
+#: src/client/notes-view.js:69
+msgid "Try another search or add your first note."
+msgstr "Prova en annan sökning eller lägg till din första anteckning."
+
+#: src/client/notes-view.js:73
+msgid "Couldn't load notes"
+msgstr "Det gick inte att läsa in anteckningarna"
+
+#: src/client/notes-view.js:103
+msgid "Refresh notes"
+msgstr "Uppdatera anteckningar"
+
+#: src/client/notes-view.js:134
+msgid "Loading notes."
+msgstr "Läser in anteckningar."
+
+#: src/client/notes-view.js:141
+#, javascript-format
+msgid "%d note loaded."
+msgid_plural "%d notes loaded."
+msgstr[0] "%d anteckning lästes in."
+msgstr[1] "%d anteckningar lästes in."
+
+#: src/client/notes-view.js:145
+#, javascript-format
+msgid "Loading notes failed: %s"
+msgstr "Det gick inte att läsa in anteckningar: %s"
+
+#: src/client/notes-view.js:182
+msgid "Note"
+msgstr "Anteckning"
+
+#: src/client/notes-view.js:184
+msgid "Loading note"
+msgstr "Läser in anteckningen"
+
+#: src/client/notes-view.js:185
+msgid "Retrieving note details..."
+msgstr "Hämtar anteckningsuppgifter..."
+
+#: src/client/notes-view.js:197
+#, javascript-format
+msgid "Note details loaded (key %d)."
+msgstr "Anteckningsuppgifter lästes in (nyckel %d)."
+
+#: src/client/notes-view.js:203
+#, javascript-format
+msgid "Loading note details failed: %s"
+msgstr "Det gick inte att läsa in anteckningsuppgifterna: %s"
+
+#: src/client/notes-view.js:205
+msgid "Couldn't load note"
+msgstr "Det gick inte att läsa in anteckningen"
+
+#: src/client/notes-view.js:220 src/client/notes-view.js:373
+msgid "Note details"
+msgstr "Anteckningsuppgifter"
+
+#: src/client/notes-view.js:222
+msgid "Created"
+msgstr "Skapad"
+
+#: src/client/notes-view.js:260
+msgid "Assigned events"
+msgstr "Tilldelade evenemang"
+
+#: src/client/notes-view.js:272
+msgid "No assigned events"
+msgstr "Inga tilldelade evenemang"
+
+#: src/client/notes-view.js:292
+msgid "Delete note"
+msgstr "Ta bort anteckning"
+
+#: src/client/notes-view.js:321
+msgid "Couldn't load assignments"
+msgstr "Det gick inte att läsa in tilldelningarna"
+
+#: src/client/notes-view.js:337 src/client/notes-view.js:344
+msgid "Edit note"
+msgstr "Redigera anteckning"
+
+#: src/client/notes-view.js:337 src/client/notes-view.js:344
+msgid "New note"
+msgstr "Ny anteckning"
+
+#: src/client/notes-view.js:375
+msgid "Heading"
+msgstr "Rubrik"
+
+#: src/client/notes-view.js:382
+msgid "Text"
+msgstr "Text"
+
+#: src/client/notes-view.js:405
+msgid "Leave both assignment lists unselected to create a standalone note."
+msgstr ""
+"Lämna båda tilldelningslistorna omarkerade för att skapa en fristående "
+"anteckning."
+
+#: src/client/notes-view.js:406
+msgid "This note will be linked to this event."
+msgstr "Den här anteckningen kopplas till evenemanget."
+
+#: src/client/notes-view.js:412
+msgid "Contacts (optional)"
+msgstr "Kontakter (valfritt)"
+
+#: src/client/notes-view.js:434
+msgid "Events (optional)"
+msgstr "Evenemang (valfritt)"
+
+#: src/client/notes-view.js:451
+msgid "No events available"
+msgstr "Inga evenemang tillgängliga"
+
+#: src/client/notes-view.js:477
+#, javascript-format
+msgid "Note save failed: %s"
+msgstr "Det gick inte att spara anteckningen: %s"
+
+#: src/client/notes-view.js:567
+msgid "Note saved"
+msgstr "Anteckningen har sparats"
+
+#: src/client/notes-view.js:576
+msgid "Delete note?"
+msgstr "Ta bort anteckningen?"
+
+#: src/client/notes-view.js:577
+#, javascript-format
+msgid "Delete “%s”? Contact and event records will not be deleted."
+msgstr "Ta bort ”%s”? Kontakt- och evenemangsposter tas inte bort."
+
+#: src/client/notes-view.js:592
+msgid "Couldn't delete note"
+msgstr "Det gick inte att ta bort anteckningen"
+
+#: src/client/form-model.js:6
+msgid "is required."
+msgstr "måste anges."
+
+#: src/client/form-model.js:22
+msgid "Every social account needs a platform."
+msgstr "Varje socialt konto måste ha en plattform."
+
+#: src/client/form-model.js:90 src/client/form-model.js:107
+msgid "Enter valid dates and times."
+msgstr "Ange giltiga datum och tider."
+
+#: src/client/form-model.js:114
+msgid "Name is required."
+msgstr "Namn måste anges."
+
+#: src/client/form-model.js:120
+msgid "Event dates and times are required."
+msgstr "Evenemangets datum och tid måste anges."
+
+#: src/client/form-model.js:125
+msgid "Event end must be later than its start."
+msgstr "Evenemangets sluttid måste vara senare än starttiden."
+
+#: src/client/form-model.js:176
+msgid "Note heading is required."
+msgstr "Rubrik måste anges."
+
+#: src/client/form-model.js:177
+msgid "Note text is required."
+msgstr "Text måste anges."
+
+#: src/client/shared-ui.js:35
+msgid "Show Log"
+msgstr "Visa logg"
+
+#: src/client/shared-ui.js:41
+msgid "Application menu"
+msgstr "Programmeny"
+
+#: src/client/local-api.js:9
+msgid "Method not allowed"
+msgstr "Metoden tillåts inte"
+
+#: src/client/local-api.js:10
+msgid "API route not found"
+msgstr "API-rutten hittades inte"
+
+#: src/client/local-api.js:11
+msgid "Contact not found"
+msgstr "Kontakten hittades inte"
+
+#: src/client/local-api.js:12
+msgid "Contact or social record not found"
+msgstr "Kontakten eller det sociala kontot hittades inte"
+
+#: src/client/local-api.js:13
+msgid "Contact version conflict"
+msgstr "Kontaktversionen har ändrats"
+
+#: src/client/local-api.js:14
+msgid "Contact or social version conflict"
+msgstr "Kontaktversionen eller versionen av det sociala kontot har ändrats"
+
+#: src/client/local-api.js:15
+msgid "Event not found"
+msgstr "Evenemanget hittades inte"
+
+#: src/client/local-api.js:16
+msgid "Event version conflict"
+msgstr "Evenemangsversionen har ändrats"
+
+#: src/client/local-api.js:17
+msgid "Event contact assignment not found"
+msgstr "Evenemangets kontakttilldelning hittades inte"
+
+#: src/client/local-api.js:18
+msgid "A contact can only be assigned to an event once"
+msgstr "En kontakt kan bara tilldelas ett evenemang en gång"
+
+#: src/client/local-api.js:19
+msgid "Note not found"
+msgstr "Anteckningen hittades inte"
+
+#: src/client/local-api.js:20
+msgid "Note version conflict"
+msgstr "Anteckningsversionen har ändrats"
+
+#: src/client/local-api.js:21
+msgid "A contact can only be assigned to a note once"
+msgstr "En kontakt kan bara tilldelas en anteckning en gång"
+
+#: src/client/local-api.js:22
+msgid "An event can only be assigned to a note once"
+msgstr "Ett evenemang kan bara tilldelas en anteckning en gång"
+
+#: src/client/local-api.js:24
+msgid "The record conflicts with existing data"
+msgstr "Posten strider mot befintliga uppgifter"
+
+#: src/client/local-api.js:45
+msgid "Node.js is required to start the local API."
+msgstr "Node.js krävs för att starta det lokala API:et."
+
+#: src/client/local-api.js:70
+#, javascript-format
+msgid "Could not start the local API: %s"
+msgstr "Det gick inte att starta det lokala API:et: %s"
+
+#: src/client/local-api.js:81
+msgid "The local API stopped unexpectedly."
+msgstr "Det lokala API:et avslutades oväntat."
+
+#: src/client/local-api.js:98
+msgid "The local API exited before it was ready."
+msgstr "Det lokala API:et avslutades innan det blev tillgängligt."
+
+#: src/client/local-api.js:114
+msgid "The local API returned invalid startup details."
+msgstr "Det lokala API:et returnerade ogiltig startinformation."
+
+#: src/client/local-api.js:121
+#, javascript-format
+msgid "Could not initialize the local API: %s"
+msgstr "Det gick inte att initiera det lokala API:et: %s"
+
+#: src/client/local-api.js:147
+#, javascript-format
+msgid "Could not read API diagnostics: %s"
+msgstr "Det gick inte att läsa API-diagnostiken: %s"
+
+#: src/client/local-api.js:165
+msgid "The API returned an invalid contacts response."
+msgstr "API:et returnerade ett ogiltigt kontaktsvar."
+
+#: src/client/local-api.js:194
+msgid "The API returned an invalid events response."
+msgstr "API:et returnerade ett ogiltigt evenemangssvar."
+
+#: src/client/local-api.js:232
+msgid "The API returned an invalid notes response."
+msgstr "API:et returnerade ett ogiltigt anteckningssvar."
+
+#: src/client/local-api.js:258
+msgid "The local API is not ready."
+msgstr "Det lokala API:et är inte tillgängligt."
+
+#: src/client/local-api.js:262
+#, javascript-format
 msgid "HTTP %s %s started."
 msgstr "HTTP %s %s startades."
 
-#, c-format
+#: src/client/local-api.js:281
+#, javascript-format
 msgid "HTTP %s %s returned status %d."
 msgstr "HTTP %s %s returnerade status %d."
 
-#, c-format
+#: src/client/local-api.js:291
+msgid "The API returned invalid JSON."
+msgstr "API:et returnerade ogiltig JSON."
+
+#: src/client/local-api.js:296
+#, javascript-format
 msgid "API error code: %s"
 msgstr "API-felkod: %s"
 
+#: src/client/local-api.js:298
 msgid "unknown"
 msgstr "okänd"
 
-#, c-format
-msgid "HTTP %s %s failed: %s"
-msgstr "HTTP %s %s misslyckades: %s"
-
+#: src/client/local-api.js:304
+#, javascript-format
 msgid "API error message: %s"
 msgstr "API-felmeddelande: %s"
 
+#: src/client/local-api.js:311
+#, javascript-format
+msgid "API request failed (%d)."
+msgstr "API-begäran misslyckades (%d)."
+
+#: src/client/local-api.js:320
+#, javascript-format
+msgid "HTTP %s %s failed: %s"
+msgstr "HTTP %s %s misslyckades: %s"
+
+#: src/client/local-api.js:327
+#, javascript-format
 msgid "API request failed: %s"
 msgstr "API-begäran misslyckades: %s"

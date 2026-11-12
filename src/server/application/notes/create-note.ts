@@ -5,7 +5,10 @@ import {
   linkNoteToContact,
   linkNoteToEvent,
 } from "../../db/note-links.js";
-import { insertNote } from "../../db/note.js";
+import {
+  insertNote,
+  insertNoteWithGeneratedKey,
+} from "../../db/note.js";
 import type { NoteRecord } from "../../db/types.js";
 
 export interface CreateNoteWithAssignmentsInput {
@@ -15,6 +18,11 @@ export interface CreateNoteWithAssignmentsInput {
   contactKeys?: readonly number[];
   eventKeys?: readonly number[];
 }
+
+export type CreateNoteWithGeneratedKeyInput = Omit<
+  CreateNoteWithAssignmentsInput,
+  "key"
+>;
 
 export type CreateNoteResult =
   | {
@@ -39,8 +47,9 @@ function findDuplicate(values: readonly number[]): number | undefined {
   return undefined;
 }
 
-export function createNote(
-  input: CreateNoteWithAssignmentsInput,
+function createNoteWithInsert(
+  input: CreateNoteWithAssignmentsInput | CreateNoteWithGeneratedKeyInput,
+  insert: () => NoteRecord,
 ): CreateNoteResult {
   return runInImmediateTransaction(() => {
     const contactKeys = input.contactKeys ?? [];
@@ -66,12 +75,7 @@ export function createNote(
       }
     }
 
-    let note = insertNote({
-      key: input.key,
-      created_at: new Date().toISOString(),
-      heading: input.heading,
-      text: input.text,
-    });
+    let note = insert();
     for (const contactKey of contactKeys) {
       const result = linkNoteToContact(note.key, note.version, contactKey);
       if (result.status !== "updated") {
@@ -94,4 +98,29 @@ export function createNote(
       eventKeys: [...eventKeys],
     };
   });
+}
+
+export function createNote(
+  input: CreateNoteWithAssignmentsInput,
+): CreateNoteResult {
+  return createNoteWithInsert(input, () =>
+    insertNote({
+      key: input.key,
+      created_at: new Date().toISOString(),
+      heading: input.heading,
+      text: input.text,
+    })
+  );
+}
+
+export function createNoteWithGeneratedKey(
+  input: CreateNoteWithGeneratedKeyInput,
+): CreateNoteResult {
+  return createNoteWithInsert(input, () =>
+    insertNoteWithGeneratedKey({
+      created_at: new Date().toISOString(),
+      heading: input.heading,
+      text: input.text,
+    })
+  );
 }

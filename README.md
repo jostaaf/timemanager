@@ -34,8 +34,8 @@ for test coverage and all available database commands.
 
 ## Local API
 
-The first HTTP/JSON API slice supports contacts and their social records. Start
-it after initializing the database:
+The local HTTP/JSON API supports contacts and their social records, events,
+and notes. Start it after initializing the database:
 
 ```sh
 npm run api:start
@@ -69,13 +69,43 @@ database rows may have version `0`; newly created records start at version `1`.
 failures return `400`; missing records return `404`; stale versions and
 uniqueness/relationship conflicts return `409`.
 
+The event endpoints are `GET` and `POST /api/events`, plus `GET`, `PATCH`, and
+`DELETE /api/events/{key}`. The optional `name` query parameter searches event
+names. `POST` accepts an `event` with `name`, UTC ISO-8601 `start` and `end`,
+and nullable `comment`, plus optional `contacts` entries with `contactKey` and
+nullable `role`. The API assigns keys and starts event and assignment versions
+at `1`. Event details include assigned contact records and their roles.
+`PATCH` takes `expectedVersion`, partial event `changes`, and `contactChanges`
+(add, update, or delete); delete requires an `expectedVersion` body. Deleting
+an event removes its contact assignments but preserves linked notes.
+
+Notes are available through `GET` and `POST /api/notes`, plus `GET`, `PATCH`,
+and `DELETE /api/notes/{key}`. `GET` accepts an optional `q` query parameter
+that searches note headings and text, or `eventKey` to list notes linked to an
+event. `POST` accepts `heading`, `text`, and
+optional `contactKeys` and `eventKeys` arrays. Both arrays may be omitted or
+empty, so a note does not require a contact or event; either assignment type
+can also be used independently. Note details include the linked contact and
+event records. `PATCH` accepts `expectedVersion`, partial `changes` for
+`heading` and `text`, and optional `contactKeys` and `eventKeys` arrays to
+replace those assignments. Assignment changes increment the note version;
+delete also requires `expectedVersion`.
+
 ## GNOME client
 
 The initial native Ubuntu client uses GJS, GTK 4, and libadwaita. It starts the
 local API as a child process, reads its ephemeral token directly from the
-startup pipe, and provides searchable contact details with create, edit,
-social-account management, and delete flows. Install the GNOME runtime
-bindings if needed:
+startup pipe, and provides searchable contacts with social-account management
+and searchable events and notes with detail, create/edit/delete, and contact
+and event assignment flows for notes. Event details and the event editor show
+linked notes and let you create a note prelinked to that event. Event contact
+assignments can be searched by contact name, city, and email. Event dates and
+times are displayed as
+`YYYY-MM-DD HH:MM` in the local time zone and edited in separate date and time
+fields. It opens on the Events view by default.
+The client entry point is `src/client/main.js`; contact, event, and note pages
+are separate views, with shared UI helpers and pure form-model functions.
+Install the GNOME runtime bindings if needed:
 
 ```sh
 sudo apt install gettext gjs gir1.2-gtk-4.0 gir1.2-adw-1 gir1.2-soup-3.0
@@ -102,8 +132,9 @@ add its code to `po/LINGUAS` and provide a matching catalog.
 
 For prototype diagnostics, open the application menu and choose **Show Log**.
 The timestamped log records client actions and API request results, including
-the contact-save flow. It is kept in memory, limited to the most recent 500
-entries, and does not record API request bodies or authentication tokens.
+the contact and event save flows. It is kept in memory, limited to the most
+recent 500 entries, and does not record API request bodies or authentication
+tokens.
 
 To build without running tests:
 

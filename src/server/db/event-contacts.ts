@@ -29,6 +29,22 @@ export function insertEventContact(
   return inserted;
 }
 
+export function insertEventContactWithGeneratedKey(
+  record: Omit<EventContactsRecord, "key" | "version">,
+): EventContactsRecord {
+  const inserted = db
+    .prepare<Omit<EventContactsRecord, "key" | "version">, EventContactsRecord>(
+      `INSERT INTO event_contacts ("event_key", "contact_key", "role")
+       VALUES (@event_key, @contact_key, @role)
+       RETURNING *`,
+    )
+    .get(record);
+  if (!inserted) {
+    throw new Error("Inserting event contact did not return a record");
+  }
+  return inserted;
+}
+
 export function getEventContactByPair(
   eventKey: number,
   contactKey: number,
